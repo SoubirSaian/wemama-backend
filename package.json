@@ -1,0 +1,53 @@
+{
+  "name": "wemama-app",
+  "version": "1.0.0",
+  "description": "it's a backend server based on node and express. It's a REST API server for a mobile application called WeMama. The server is responsible for handling all the business logic and data management for the application.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "create-module": "ts-node src/app/create_module_tem.ts module"
+  },
+  "keywords": [],
+  "author": "Soubir Saian Mallick",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/multer-s3": "^3.0.3",
+    "@types/node": "^24.10.1",
+    "@types/nodemailer": "^7.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.958.0",
+    "axios": "^1.13.6",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.4",
+    "multer": "^2.0.2",
+    "multer-s3": "^3.0.1",
+    "nodemailer": "^7.0.10",
+    "stripe": "^20.1.0",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.12"
+  }
+}

@@ -1,0 +1,7 @@
+
+
+export interface IJwtPayload {
+    authId: string;
+    email: string;
+    profileId: string
+}
