@@ -3,8 +3,8 @@ import { Request } from 'express';
 
 export interface AuthRequest extends Request {
   user: {
-    userId: string;
+    authId: string;
     email: string;
-    name: string;
+    profileId: string;
   };
 }

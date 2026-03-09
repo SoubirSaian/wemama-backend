@@ -1,20 +1,18 @@
 
-export const ENUM_POST_STATUS = {
-    PENDING: "Pending",
-    ACCEPTED: "Accepted",
-    PICKED: "Picked",
-    ON_THE_WAY: "On_The_Way",
-    DELIVERED: "Delivered"
+export const ENUM_USER_ROLE = {
+    USER: "USER",
+    ADMIN: "ADMIN",
+    SUPER_ADMIN: "SUPER_ADMIN",
+    EXPART: "EXPERT"
 }
 
-export const ENUM_POST_SIZE = {
-    SMALL: "S",
-    MEDIUM: "M",
-    LARGE: "L",
-    XTRALARGE: "XL"
+export const ENUM_SESSION_STATUS= {
+   ONGOING: "Ongoing",
+   UPCOMING: "Upcoming",
+   COMPLETED: "Completed"
 }
 
-export const ENUM_POST_PRIORITY = {
-    URGENT: "Urgent",
-    LATER: "Later"
-}
+// export const ENUM_POST_PRIORITY = {
+//     URGENT: "Urgent",
+//     LATER: "Later"
+// }

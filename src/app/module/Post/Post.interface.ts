@@ -1,22 +1,27 @@
 import { Types } from "mongoose";
 
 export interface IPost {
-  creator: Types.ObjectId;  
-  bearer: Types.ObjectId  ;
-  status: string;
-  priority: string;
-  size: string;
-  title: string;
-  description: string;
-  images: string[];
-  pickUpLocation: object;
-  dropLocation: object;
-  category: string;
-//   subcategory: string; 
-  price: number;
-  deliveryDate: Date;
-  deliveryTime: Date;
+  creator: Types.ObjectId;
+  community: Types.ObjectId;
+  content: string;
+  isAnonymous: boolean;
 
+}
+
+export interface ILike {
+  creator: Types.ObjectId;
+  post: Types.ObjectId;
+  name: string;
+  createdAt: Date;
+
+}
+export interface IComment {
+  creator: Types.ObjectId;
+  name : string;
+  comment?: Types.ObjectId;
+  content: string;
+  post: Types.ObjectId;
+  createdAt: Date;
 }
 
 export interface INearbyPostParams {

@@ -1,202 +1,77 @@
 import mongoose from "mongoose";
 import ApiError from "../../../error/ApiError";
 import { IJwtPayload } from "../../../interface/jwt.interface";
-import { IPost } from "./Post.interface";
-import PostModel from "./Post.model";
+import { IComment, ILike, IPost } from "./Post.interface";
+import PostModel, { LikeModel } from "./Post.model";
 import { ENUM_POST_STATUS } from "../../../utilities/enum";
 import { title } from "process";
+import { is } from "zod/v4/locales";
 
-const createPostService = async ( userDetails: IJwtPayload,files: Express.Multer.File[] | undefined,payload: Partial<IPost>) => {
+const createPostService = async ( userDetails: IJwtPayload,payload: Partial<IPost>) => {
     
-    const creatorId = userDetails.userId;
-
-    //handle images upload
-    let imageUrls: string[] = [];
-
-    if(files && files.length > 0){
-        imageUrls = files?.map(file => `uploads/post-images/${file.filename}`);
-    }
-    
+    const creatorId = userDetails.profileId;
 
     const newPost = await PostModel.create({
-      creator: creatorId,
-      images: imageUrls,
-        ...payload,
+        creator: creatorId,
+        community: payload.community,
+        content: payload.content,
+        isAnonymous: payload.isAnonymous || false
     });
 
     if(!newPost){
-        throw new ApiError(500,"Failed to create new post.");
+      throw new ApiError(500,"Failed to create a new post.");
     }
-
-    //calculate delivery fee if needed
-    // Step-by-step
-
-    // Customer creates job
-
-    // Backend calculates price
-
-    // Price stored in DB
-
-    // Customer pays via gateway
-
-    // Payment webhook confirms
-
-    // Order marked as PAID
-
-    // Driver assigned
-
-    // Job completed
-
-    // Driver wallet credited
 
     return newPost;
+    
 };
 
-const getAllPostService = async ( userDetails: IJwtPayload ,query: Record<string,unknown>) => {
-    const { postStatus } = query;
-    const creatorId = userDetails.userId;
+const giveLike = async ( userDetails: IJwtPayload,payload: Partial<ILike>) => {
+    
+    const creatorId = userDetails.profileId;
 
-    const filter: Record<string, unknown> = { creator: creatorId, status: postStatus  };
+    const newLike = await LikeModel.create({
+        creator: creatorId,
+        post: payload.post,
+        name: payload.name,
+      
+    });
 
-    // if (status) {
-    //     filter.status = status;
-    // }
+    if(!newLike){
+      throw new ApiError(500,"Failed to give new Like.");
+    }
 
-    const posts = await PostModel.find(filter);
-
-    return posts;
+    return newLike;
+    
 };
 
-const getNearbyPostsService = async (userDetails: IJwtPayload, query: Record<string,unknown>) => {
-  const userId = userDetails.userId;
+const makeComment = async ( userDetails: IJwtPayload,payload: Partial<IComment>) => {
+    
+    const creatorId = userDetails.profileId;
 
-  const { latitude, longitude, radiusKm } = query as {
-    latitude: number;
-    longitude: number;
-    radiusKm: number;
-  };
+    const newComment = await PostModel.create({
+        creator: creatorId,
+        post: payload.post,
+        comment: payload.comment || null,
+        content: payload.content,
+        name: payload.name,
+        
+    });
 
-  const radiusInMeters = radiusKm * 1000;
+    if(!newComment){
+      throw new ApiError(500,"Failed to create a new comment.");
+    }
 
-  const queryparameters = {
-    creator: { $ne: new mongoose.Types.ObjectId(userId) },
-    status: ENUM_POST_STATUS.PENDING, // not my post
-      pickUpLocation: {
-        $nearSphere: {
-          $geometry: {
-            type: "Point",
-            coordinates: [longitude, latitude],
-          },
-          $maxDistance: radiusKm * 1000,
-        }
-      }
-  }
-
-  const posts = await PostModel.find({
-    creator: { $ne: new mongoose.Types.ObjectId(userId) },
-    status: ENUM_POST_STATUS.PENDING, // not my post
-    pickUpLocation: {
-      $nearSphere: {
-        $geometry: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-        },
-        $maxDistance: radiusInMeters,
-      },
-    },
-  });
-
-  return posts;
+    return newComment;
+    
 };
 
-const getPostDetailService = async (postId: string) => {
 
-    const post = await PostModel.findById(postId);
-
-    if (!post) {
-        throw new ApiError(404, "Post not found.");
-    }
-
-    return post;
-}
-
-const acceptPostService = async (userDetails: IJwtPayload, postId: string) => {
-    const userId = userDetails.userId;
-
-    const post = await PostModel.findById(postId);
-
-    if (!post) {
-        throw new ApiError(404, "Post not found to accept request.");
-    }
-
-    if (post.status !== ENUM_POST_STATUS.PENDING) {
-        throw new ApiError(400, "Post is not available for acceptance.");
-    }
-
-    post.bearer = new mongoose.Types.ObjectId(userId);
-    post.status = ENUM_POST_STATUS.ACCEPTED;
-
-    await post.save();
-
-    return {
-      bearer: post.bearer, 
-      title: post.title, 
-      description: post.description,
-      status: post.status, 
-    };
-
-}
-
-
-/*
-
-{
-  "creator": "64f1c2a9e4b0f8b5a1c9d123",
-  "bearer": "64f1c2a9e4b0f8b5a1c9d456",
-  "status": "PENDING",
-  "priority": "URGENT",
-  "size": "SMALL",
-  "title": "Deliver Documents Urgently",
-  "description": "Need to deliver important documents within the city today.",
-  "images": [
-    "https://example.com/image1.jpg",
-    "https://example.com/image2.jpg"
-  ],
-  "pickUpLocation": {
-    "type": "Point",
-    "coordinates": [90.3566, 23.7465],
-    "address": "Banani, Dhaka",
-  },
-  "dropLocation": {
-     "type": "Point",
-    "coordinates": [90.3566, 23.7465],
-    "address": "Dhanmondi, Dhaka",
-  },
-  "category": "Documents",
-  "price": 500,
-  "deliveryDate": "2025-01-05",
-  "deliveryTime": "2025-01-05T15:30:00.000Z"
-}
-
-*/
-
-//dashboard
-
-const dashboardAllPostService = async () => {
-
-  const allPosts = await PostModel.find({}).lean();
-
-  return allPosts;
-}
 
 
 const PostServices = { 
     createPostService ,
-    getAllPostService,
-    getNearbyPostsService,
-    getPostDetailService,
-    acceptPostService,
-
-    dashboardAllPostService
+    giveLike,
+    makeComment,
 };
 export default PostServices;

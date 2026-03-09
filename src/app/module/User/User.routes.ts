@@ -11,7 +11,7 @@ const userRouter = express.Router();
 
 userRouter.patch("/update-profile",
     // auth(["Supplier","Customer"]),
-    // uploadProfile.single('profile-image'),
+    uploadProfile.array('profile-image', 4),
     validateRequest(UserValidations.updateprofileValidation),
     UserController.updateProfile
 );

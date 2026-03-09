@@ -9,6 +9,7 @@ export const updateprofileValidation = z.object({
         city: z.string().min(6, "city is required").optional(),
         bio: z.string().min(6, "bio is required").optional(),
         children: z.array(z.string()).min(1, "At least one child is required").optional(),
+        currentImages: z.array(z.string()).optional(),
     }),
 });
 

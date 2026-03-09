@@ -55,3 +55,17 @@ async function main() {
 
 // Run the main function and log errors
 main().catch((err) => errorLogger.error('Main function error:', err));
+
+/*
+import http from "http";
+import app from "./app";
+import { initSocket } from "./socket";
+
+const server = http.createServer(app);
+
+initSocket(server);
+
+server.listen(5000, () => {
+  console.log("Server running on port 5000");
+});
+*/

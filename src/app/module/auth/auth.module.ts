@@ -2,15 +2,18 @@ import { model, models, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import config from "../../../config";
 import { IAuth } from "./auth.interface";
+import { ENUM_USER_ROLE } from "../../../utilities/enum";
 
 const AuthSchema = new Schema<IAuth>({
     profile: { type: Schema.Types.ObjectId, ref: "Auth" },
     // name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    // phone: { type: String },
-    
-   
+    role: {
+        type: String,
+        enum: Object.values(ENUM_USER_ROLE),
+        default: ENUM_USER_ROLE.USER
+    },
     verificationCode: { type: String, default: "" },
     isBlocked: { type: Boolean, default: false },
     isEmailVerified: { type: Boolean, default: false },

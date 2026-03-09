@@ -19,7 +19,7 @@ const UserSchema = new Schema<IUser>({
         type: String,
         default: ''
     },
-    image: [
+    images: [
         {
             type: String,
             default: ''

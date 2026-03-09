@@ -10,7 +10,7 @@ import { multerS3Storage } from "../../helper/multerS3";
    storage: profileStorage,
  
    limits: {
-     fileSize: 3145728, // 3MB . less than 3mb file allowed
+     fileSize: 5 * 1024 * 1024, // 5MB . less than 5mb file allowed
     //  fieldSize: 3 * 1024 *1024
    },
  

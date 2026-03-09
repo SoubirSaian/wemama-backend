@@ -9,7 +9,9 @@ const updateProfile = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
 
-    const result = await UserServices.updateUserProfile(user ,req.file, req.body);
+     const files = req.files as Express.Multer.File[];
+
+    const result = await UserServices.updateUserProfile(user ,files, req.body);
     
     sendResponse(res, {
         statusCode: 200,

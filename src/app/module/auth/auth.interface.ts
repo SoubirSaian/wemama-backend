@@ -2,9 +2,9 @@ import { Types } from "mongoose";
 
 export interface IAuth {
     profile: Types.ObjectId;
-    name?: string;
-    phone?: string;
     email: string;
+    name?: string;
+    role: string;
     password: string;
     verificationCode: string;
     isEmailVerified: boolean;

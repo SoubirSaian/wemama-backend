@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const updateNotificationData = z.object({
+        
+const u = z.object({
     body: z.object({
         name: z.string().optional(),
         phone: z.string().optional(),
@@ -8,5 +9,6 @@ export const updateNotificationData = z.object({
     }),
 });
 
-const NotificationValidations = { updateNotificationData };
-export default NotificationValidations;
+const ChatValidations = { u };
+
+export default ChatValidations;

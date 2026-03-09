@@ -1,7 +1,5 @@
 import { model, models, Schema } from "mongoose";
-import { IPost } from "./Post.interface";
-import { ENUM_POST_PRIORITY, ENUM_POST_SIZE, ENUM_POST_STATUS } from "../../../utilities/enum";
-import { required } from "zod/v4/core/util.cjs";
+import { IComment, ILike, IPost } from "./Post.interface";
 
 const PostSchema = new Schema<IPost>({
     creator: {
@@ -9,88 +7,81 @@ const PostSchema = new Schema<IPost>({
         ref: "User",
         required: [true,"Post creator id is required."]
     },
-    bearer: {
+    community: {
         type: Schema.Types.ObjectId,
-        ref: "User"
+        ref: "Community",
+        required: true
     },
-    status: {
-        type: String,
-        enum: Object.values(ENUM_POST_STATUS),
-        default: ENUM_POST_STATUS.PENDING
-    },
-    priority: {
-        type: String,
-        enum: Object.values(ENUM_POST_PRIORITY),
-        default: ENUM_POST_PRIORITY.URGENT
-    },
-    size: {
-        type: String,
-        enum: Object.values(ENUM_POST_SIZE),
-        default: ENUM_POST_SIZE.SMALL
-    },
-    title: {
+    content: {
         type: String,
         required: [true,"Post title required."]
     },
-    description: {
-        type: String,
-        required: [true,"Post description required."]
-    },
-    images: [{
-        type: String,
-        default: ''
-    }],
-    pickUpLocation: {
-        type: {
-            type: String,
-            enum: ["Point"],
-            default: "Point"
-        },
-        coordinates: {
-            type: [Number], // [longitude, latitude]
-            required: true
-        },
-        address: {
-            type: String,
-            required: true
-        }
-    },
-    dropLocation: {
-        type: {
-            type: String,
-            enum: ["Point"],
-            default: "Point"
-        },
-        coordinates: {
-            type: [Number],
-            required: true
-        },
-        address: {
-            type: String,
-            required: true
-        }
-    },
-    category: {
-        type: String
-    },
-    price: {
-        type: Number
-    },
-    deliveryDate: {
-        type: Date
-    },
-    deliveryTime: {
-        type: Date
-    },
+    isAnonymous: {
+        type: Boolean,
+        default: false
+    }
+    
+    
 }, { timestamps: true });
 
+const LikeSchema = new Schema<ILike>({
+    creator: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: [true,"Post creator id is required."]
+    },
+    post: {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+        required: [true,"Post id is required."]
+    },
+    name: {
+        type: String,
+        required: [true,"Liker name is required."]
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+      
 
-/* ✅ ADD INDEX RIGHT HERE */
-PostSchema.index({ pickUpLocation: "2dsphere" });
+const commentSchema = new Schema<IComment>({
+    creator: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: [true,"Comment creator id is required."]
+    },
+    post: {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+        required: [true,"Post id is required."]
+    },
+    comment: {
+        type: Schema.Types.ObjectId,
+        ref: "Comment",
+    },
+    content: {
+        type: String,
+        required: [true,"Comment content is required."]
+    },
+    name: {
+        type: String,
+        required: [true,"Comment name is required."]
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+    
+    
+});
 
-/* (Optional) If needed later */
-PostSchema.index({ dropLocation: "2dsphere" });
 
 const PostModel = models.Post || model<IPost>("Post", PostSchema);
+const LikeModel = models.Like || model<ILike>("Like", LikeSchema);
+const CommentModel = models.Comment || model<IComment>("Comment", commentSchema);
+
+export { LikeModel, CommentModel };
 
 export default PostModel;

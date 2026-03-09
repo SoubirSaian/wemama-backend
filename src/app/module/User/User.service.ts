@@ -9,54 +9,79 @@ import { email } from "zod";
 import AuthModel from "../auth/auth.module";
 
 
+const updateUserProfile = async (userDetails: IJwtPayload,files: Express.Multer.File[],payload: Partial<IUser> ) => {
 
-const updateUserProfile = async (userDetails: IJwtPayload,file: Express.Multer.File | undefined,payload: Partial<IUser>) => {
   const { profileId } = userDetails;
 
-  // Fetch user and profile in parallel
-  const user = await UserModel.findByIdAndUpdate(profileId,{ 
-        image: file ? `uploads/profile-image/${file.filename}` : '',
-        ...payload
-    }, { new: true });
-   
+  const { name, DOB, state, city, bio, children, currentImages } = payload as any;
 
-  if (!user ) {
-    throw new ApiError(404, "Profile not found to update.");
+  const profile = await UserModel.findById(profileId);
+
+  if (!profile) {
+    throw new ApiError(404, "User profile not found to update.");
   }
 
-//   // Update fields
-//   const { name, phone } = payload;
+  let updatedImages: string[] = [];
 
-//   if (name) {
-//     user.name = name;
-//   }
+  if( files && files.length > 4){
 
-//   if (phone) {
-//     user.phone = phone;
-//   }
+      const existingImages: string[] = profile.images || [];
+    
+      // Images client wants to keep
+      const keptImages: string[] = currentImages || [];
+    
+      // Newly uploaded images
+      const newImages =
+        files?.map((file) => `uploads/profile-image/${file.filename}`) || [];
+    
+      // Find images removed by user
+      const removedImages = existingImages.filter(
+        (img) => !keptImages.includes(img)
+      );
+    
+      // Delete removed images from server
+      removedImages.forEach((imgPath) => {
+        deleteOldFile(imgPath);
+      });
+    
+      // Final image list
+       updatedImages = [...keptImages, ...newImages];
+  }
 
-//   // Handle image update
-//   if (file) {
 
-//     if (user.image) deleteOldFile(user.image as string);
+  const updatedProfile = await UserModel.findByIdAndUpdate(
+    profileId,
+    {
+      name,
+      DOB,
+      state,
+      city,
+      bio,
+      children,
+      images: updatedImages,
+    },
+    { new: true, runValidators: true }
+  );
 
-//     user.image = `uploads/profile-image/${file.filename}`;
-//   }
-
-  // Save both
-//   await user.save();
-
-  // Return a unified response
-  return user;
+  return updatedProfile;
 };
 
 const completeUserProfile = async (userDetails: IJwtPayload, file: Express.Multer.File | undefined, payload: Partial<IUser>) => {
     const { authId, email, profileId } = userDetails;
 
-    const profile = await UserModel.findByIdAndUpdate(profileId, {
-        ...payload,
-        image: file ? `uploads/profile-image/${file.filename}` : undefined
-    });
+    let updateData: any = { ...payload };
+
+    if (file) {
+        updateData.$push = {
+            images: `uploads/profile-image/${file.filename}`
+        };
+    }
+
+    const profile = await UserModel.findByIdAndUpdate(
+        profileId,
+        updateData,
+        { new: true }
+    );
 
     if (!profile) {
         throw new ApiError(500, "Failed to complete profile.");
@@ -64,10 +89,11 @@ const completeUserProfile = async (userDetails: IJwtPayload, file: Express.Multe
 
     // await AuthModel.findByIdAndUpdate(userId, { profile: profile._id });
 
-    return {
-        name: profile.name,
-        email: profile.email,
-    };
+    // return {
+    //     name: profile.name,
+    //     email: profile.email,
+    // };
+    return profile;
 
 }
 
