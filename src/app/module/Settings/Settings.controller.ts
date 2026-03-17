@@ -10,7 +10,7 @@ const submitHelpAndSupport = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 201,
         success: true,
-        message: "Profile updated successfully",
+        message: "Report submitted successfully.",
         data: result,
     });
 });

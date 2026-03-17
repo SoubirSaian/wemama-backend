@@ -3,6 +3,9 @@ import { ConversationModel, MessageModel } from "./Chat.model";
 import { getIO } from "../../../socket/socket.connection";
 import ApiError from "../../../error/ApiError";
 import UserModel from "../User/User.model";
+import notification from "../../../helper/sendNotification";
+import { ENUM_NOTIFICATION_TYPE } from "../../../utilities/enum";
+import { emitResult } from "../../../socket/emitResult";
 
 //send request
 export const sendConversationRequest = async (
@@ -23,7 +26,30 @@ export const sendConversationRequest = async (
 
   const io = getIO();
 
-  io.to(receiverId).emit("new_conversation_request", conversation);
+  //send response to receiver
+  io.to(receiverId).emit("new_conversation_request", emitResult({
+        statusCode: 201,
+        success: true,
+        message: `You have received a new conversation request`,
+        data: conversation,
+      }));
+  //send response to
+  io.to(senderId).emit("new_conversation_request", emitResult({
+        statusCode: 201,
+        success: true,
+        message: `You have requested for a new conversation .`,
+        data: conversation,
+      }));
+
+  //send a notification
+  await notification.createNotification({
+      toId: receiverId as string,
+      toModel: "User",
+      title: `An user sent you a conversation request.`,
+      type: ENUM_NOTIFICATION_TYPE.SENT_WAVE,
+      referenceId: conversation?._id,
+      referenceModel: "Conversation"
+  });
 
   return conversation;
 };
@@ -31,10 +57,21 @@ export const sendConversationRequest = async (
 //get all request
 export const getConversationRequests = async (userId: string) => {
 
+  const io = getIO();
+
   const requests = await ConversationModel.find({
     participants: userId,
     status: "Pending"
-  }).populate("participants", "name image");
+  }).populate("participants", "name profileImage");
+
+
+  //send response to receiver
+  io.to(userId).emit("conversation_requests", emitResult({
+        statusCode: 200,
+        success: true,
+        message: `You have retrieved all conversation requests.`,
+        data: requests,
+      }));
 
   return requests;
 };
@@ -51,7 +88,30 @@ export const acceptConversationRequest = async (conversationId: string) => {
   const io = getIO();
 
   conversation?.participants.forEach((userId: string) => {
-    io.to(userId.toString()).emit("conversation_accepted", conversation);
+    io.to(userId.toString()).emit("conversation_accepted", emitResult({
+        statusCode: 200,
+        success: true,
+        message: `You have accepted a new conversation request.`,
+        data: conversation,
+      }));
+  });
+
+  //send response to receiver
+  // io.to(conversation.participants[1]).emit("conversation_accepted", emitResult({
+  //       statusCode: 200,
+  //       success: true,
+  //       message: `You have accepted a new conversation request.`,
+  //       data: conversation,
+  //     }));
+
+  //send a notification
+  await notification.createNotification({
+      toId: conversation.participants[0] as string,
+      toModel: "User",
+      title: `User accepted your conversation request.`,
+      type: ENUM_NOTIFICATION_TYPE.ACCEPT_WAVE,
+      referenceId: conversation?._id,
+      referenceModel: "Conversation"
   });
 
   return conversation;
@@ -163,7 +223,8 @@ export const sendMessage = async ( senderId: string,receiverId: string,text: str
           participants: { $all: [senderId, receiverId] },
           status: "Accepted"
         });
-      
+        
+        //create conversation if not available
         if (!conversation) {
           conversation = await ConversationModel.create({
             participants: [senderId, receiverId],
@@ -188,8 +249,13 @@ export const sendMessage = async ( senderId: string,receiverId: string,text: str
         const io = getIO();
       
         //send message to both user
-        io.to(receiverId).emit("new_message", message);
-        io.to(senderId).emit("new_message", message);
+        io.to(receiverId).emit("new_message", emitResult({
+          statusCode: 201,
+          success: true,
+          message: `You have received a new message.`,
+          data: message,
+        }));
+        // io.to(senderId).emit("new_message", message);
       
         // update chat list
         const senderChats = await getChatList(senderId);

@@ -11,6 +11,7 @@ import { verifyToken } from '../../helper/jwtHelper';
 // import { ENUM_USER_ROLE } from '../../utilities/enum';
 import { AuthRequest } from '../../interface/authRequest';
 import { IJwtPayload } from '../../interface/jwt.interface';
+import { Socket } from 'socket.io';
 
 export const auth =
   (roles: string[], isAccessible = true) => async (req: Request, res: Response, next: NextFunction) => {
@@ -108,6 +109,38 @@ export const authorizeUser = async (req: Request, res: Response, next: NextFunct
       next(error);
     }
   };
+
+
+export const socketAuthMiddleware = (socket: Socket, next: any) => {
+  try {
+
+    // let token =
+    //   socket.handshake.auth?.token ||
+    //   socket.handshake.headers?.authorization?.split(" ")[1];
+    let token =
+        socket.handshake.auth?.token ||
+        socket.handshake.headers?.authorization;
+
+    if (!token) {
+      return next(new Error("Unauthorized: No token"));
+    }
+
+    // ✅ handle "Bearer <token>" OR raw token
+    // if (token.startsWith("Bearer ")) {
+    //   token = token.split(" ")[1];
+    // }
+
+    const decoded = jwt.verify(token, config.jwt.secret as Secret);
+
+    // attach user to socket
+    socket.data.user = decoded;
+
+    next();
+
+  } catch (error) {
+    next(new Error("Unauthorized: Invalid token"));
+  }
+};
 
   
  

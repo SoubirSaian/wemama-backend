@@ -1,51 +1,75 @@
+import mongoose, { Types, PipelineStage } from 'mongoose';
 import ApiError from "../../../error/ApiError";
-import { Express } from "express";
-import {  IChangePassword, IUser } from "./User.interface";
+import {  IAddLocation, IChangePassword, IUser, NearbyUserResult } from "./User.interface";
 import UserModel from "./User.model";
 import { JwtPayload } from "jsonwebtoken";
 import deleteOldFile from "../../../utilities/deleteFile";
 import { IJwtPayload } from "../../../interface/jwt.interface";
 import { email } from "zod";
 import AuthModel from "../auth/auth.module";
+import { syncImages } from "../../../helper/multyImages";
+import { get } from "http";
+import { ConversationModel } from '../Chat/Chat.model';
+import { add } from 'winston';
 
+const getUserProfile = async (userDetails: IJwtPayload) => {
+    const { profileId } = userDetails;
 
-const updateUserProfile = async (userDetails: IJwtPayload,files: Express.Multer.File[],payload: Partial<IUser> ) => {
+    const profile = await UserModel.findById(profileId).lean();
+
+    if (!profile) {
+        throw new ApiError(404, "User profile not found.");
+    }
+
+    return profile;
+}
+
+const updateUserProfile = async (
+  userDetails: IJwtPayload,
+  profileImage: any,
+  descriptionImages: any,
+  payload: Partial<IUser> 
+) => {
 
   const { profileId } = userDetails;
 
   const { name, DOB, state, city, bio, children, currentImages } = payload as any;
-
+  // console.log(profileImage);
+  // console.log(descriptionImages);
   const profile = await UserModel.findById(profileId);
 
   if (!profile) {
     throw new ApiError(404, "User profile not found to update.");
   }
 
-  let updatedImages: string[] = [];
+  // const updatedImages = syncImages(
+  //   profile.images || [],
+  //   currentImages,
+  //   files,
+  //   "uploads/profile-image"
+  // );
+  const removedImages: string[] = profile.images || [];
+  let newImages: string[] = [];
+  let newProfileImage;
+  // console.log("newImages:", newImages);
+  // console.log("removedImages:", removedImages);
+  //update profile image
+  if (profileImage) {
+      newProfileImage = `uploads/profile-image/${profileImage[0]?.filename}`;   
+      //delete old image
+      deleteOldFile(profile.profileImage);
+  }
 
-  if( files && files.length > 4){
-
-      const existingImages: string[] = profile.images || [];
-    
-      // Images client wants to keep
-      const keptImages: string[] = currentImages || [];
-    
-      // Newly uploaded images
-      const newImages =
-        files?.map((file) => `uploads/profile-image/${file.filename}`) || [];
-    
-      // Find images removed by user
-      const removedImages = existingImages.filter(
-        (img) => !keptImages.includes(img)
-      );
-    
-      // Delete removed images from server
-      removedImages.forEach((imgPath) => {
-        deleteOldFile(imgPath);
-      });
-    
-      // Final image list
-       updatedImages = [...keptImages, ...newImages];
+  //update description image
+  if(descriptionImages && descriptionImages.length > 0 ){
+    // console.log("enterd");
+    // map new uploaded images
+    newImages = descriptionImages?.map((file: any) => `uploads/description-image/${file.filename}`);
+    // console.log(newImages);
+    //delete old image
+    removedImages.forEach((img) => {
+      deleteOldFile(img);
+    });
   }
 
 
@@ -58,7 +82,8 @@ const updateUserProfile = async (userDetails: IJwtPayload,files: Express.Multer.
       city,
       bio,
       children,
-      images: updatedImages,
+      profileImage: profileImage ? newProfileImage : profile.profileImage,
+      images: newImages.length > 0 ? newImages : profile.images // if new images uploaded use them, otherwise keep old images
     },
     { new: true, runValidators: true }
   );
@@ -73,9 +98,10 @@ const completeUserProfile = async (userDetails: IJwtPayload, file: Express.Multe
 
     if (file) {
         updateData.$push = {
-            images: `uploads/profile-image/${file.filename}`
+            profileImage: `uploads/profile-image/${file.filename}`
         };
     }
+    // console.log(updateData);
 
     const profile = await UserModel.findByIdAndUpdate(
         profileId,
@@ -97,36 +123,31 @@ const completeUserProfile = async (userDetails: IJwtPayload, file: Express.Multe
 
 }
 
-// const addLocationService = async (userDetails: JwtPayload,payload: IAddLocation) => {
-//     // Service logic goes here
-//     const {profileId,role} = userDetails;
-//    const {location} = payload;
+const addLocationService = async (userDetails: JwtPayload,payload: IAddLocation) => {
+    // Service logic goes here
+    const {profileId} = userDetails;
+    const {address, latitude,longitude} = payload;
 
-//     let profile : ICustomer| ISupplier | null = null;
+    const profile = await UserModel.findById(profileId);
 
-//     switch (role) {
+    if(address) profile.address = address;
 
-//         case ENUM_USER_ROLE.CUSTOMER:
-//              profile = await CustomerModel.findByIdAndUpdate(profileId, {location: location}, {new: true});
-//             break;
+    if(latitude && longitude){
+      profile.location.coordinates = [Number(longitude),Number(latitude)];
+      await profile.save();
+    }
 
-//         case ENUM_USER_ROLE.SUPPLIER:
-//             profile = await SupplierModel.findByIdAndUpdate(profileId, {location: location}, {new: true});
-//             break;
-             
-//         default:{
-//             // const _exhaustiveCheck: never = role;
-//             throw new ApiError(400, "Invalid user role");
-//         }
+    if(!profile){
+      throw new ApiError(400,"Failed to add location.");
+    }
 
-//     }
-
-//     if(!profile){
-//         throw new ApiError(500,'Failed to add location in the profile');
-//     }  
-
-//     return { name:profile.name,email:profile.email, location: profile.location };
-// }
+    return {
+      name: profile.name,
+      address: profile?.address,
+      location: profile?.location
+    }
+   
+}
 
 
 // const addBankDetailService = async (userDetails: JwtPayload,payload: IBankDetail) => {
@@ -188,6 +209,234 @@ const changePasswordService = async (userDetails: IJwtPayload, payload: IChangeP
 }
 
 
+
+
+
+
+/**
+ * Service: Get users within a radius (default 10km) using $geoNear
+ * - Excludes the logged-in user
+ * - Excludes any user who already exists in ANY conversation (Pending or Accepted)
+ * - Returns distance in km (rounded to 2 decimals)
+ * - Supports pagination
+ */
+export const getUsersAroundMe = async (
+  userDetails: IJwtPayload, query: Record<string,unknown>
+  
+): Promise<NearbyUserResult[]> => {
+
+    const {profileId} = userDetails;
+    const {longitude,latitude} = query;
+
+    let radiusKm = 50;
+    const profileObjId = new Types.ObjectId(profileId);
+
+//     const excludedIds = new Set<string>();
+// conversations.forEach((conv) => {
+//   conv.participants.forEach((participantId: any) => {
+//     const idStr = participantId.toString();
+//     if (idStr !== userId.toString()) {
+//       excludedIds.add(idStr);
+//     }
+//   });
+// });
+// const excludedObjectIds = Array.from(excludedIds, (id) => new Types.ObjectId(id));
+
+//     // When building excluded:
+//   const excludedObjectIds = Array.from(excludedIdsSet).map(
+//     id => new Types.ObjectId(id)
+//   );
+
+//   // ────────────────────────────────────────────────
+//   //  Most important optimization: get excluded IDs early & efficiently
+//   // ────────────────────────────────────────────────
+//   const excludedIds = await ConversationModel.distinct('participants', {
+//     participants: profileId,
+//     // you can add: status: { $in: ['pending', 'accepted'] } if needed
+//   });
+
+//   const excluded = excludedIds
+//     .filter(id => !id.equals(profileId))     // remove self
+//     .map(id => new Types.ObjectId(id));
+
+//   // ────────────────────────────────────────────────
+//   //  Single aggregation – sample + filters
+//   // ────────────────────────────────────────────────
+//   const pipeline: PipelineStage[] = [
+//     {
+//       $geoNear: {
+//         near: { type: 'Point', coordinates: [Number(longitude), Number(latitude)] },
+//         distanceField: 'distanceMeters',
+//         maxDistance: radiusKm * 1000,
+//         spherical: true,
+//         query: {
+//           $and: [
+//             { _id: { $ne: profileId } },
+//             { _id: { $nin: excluded } }
+//           ]
+//         },
+//       },
+//     },
+//     {
+//       $addFields: {
+//         distanceKm: { $round: [{ $divide: ['$distanceMeters', 1000] }, 2] }
+//       }
+//     },
+//     {
+//       $project: {
+//         _id: 1,
+//         name: 1,
+//         images: 1,
+//         children:1,
+//         bio: 1,
+//         mumStage: 1,
+//         distanceKm: 1,
+//       }
+//     },
+//     // Instead of sort → skip → limit
+//     // We use $sample for "feels fresh" experience
+//     { $sample: { size: 1 } },
+//   ];
+
+  // 2. Find all users who already have a conversation with the current user
+  // const conversations = await ConversationModel.find({
+  //   participants: profileId,
+  // }).select('participants -_id');
+
+  // const excludedIds = new Set<string>();
+  // conversations.forEach((conv) => {
+  //   conv.participants.forEach((participantId: any) => {
+  //     const idStr = participantId.toString();
+  //     if (idStr !== profileId.toString()) {
+  //       excludedIds.add(idStr);
+  //     }
+  //   });
+  // });
+
+  // const excludedObjectIds = Array.from(excludedIds, (id) => new Types.ObjectId(id));
+
+  //   // 1. Get excluded users (as ObjectIds from the beginning)
+  // const excludedParticipantIds = await ConversationModel.distinct(
+  //   "participants",
+  //   { participants: profileObjId }
+  // );
+
+  // // Remove self & convert everything to ObjectId
+  // const finalExcludedIds = excludedParticipantIds
+  //   .filter(id => !id.equals(profileObjId))
+  //   .map(id => new Types.ObjectId(id));
+
+  // // Add self explicitly (belt & suspenders)
+  // finalExcludedIds.push(profileObjId);
+
+  // 1. Get excluded users (as ObjectIds from the beginning)
+  const excludedParticipantIds = await ConversationModel.distinct(
+    "participants",
+    { participants: profileObjId }
+  );
+
+  // Remove self & convert everything to ObjectId
+  const finalExcludedIds = excludedParticipantIds
+    .filter(id => !id.equals(profileObjId))
+    .map(id => new Types.ObjectId(id));
+
+  // Add self explicitly (belt & suspenders)
+  finalExcludedIds.push(profileObjId);
+
+  // 3. Aggregation pipeline with $geoNear (MUST be the first stage)
+  const pipeline: PipelineStage[] = [
+    {
+    $geoNear: {
+      near: {
+        type: 'Point',
+        coordinates: [Number(longitude), Number(latitude)],
+      },
+      distanceField: 'distanceMeters',
+      maxDistance: radiusKm * 1000,
+      spherical: true,
+      query: {
+        _id: { $nin: finalExcludedIds }     // ← only one condition, very safe
+      },
+    },
+  },
+    {
+      $addFields: {
+        distanceKm: { $round: [{ $divide: ['$distanceMeters', 1000] }, 2] },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        profilImage: 1,
+        images: 1,
+        address: 1,
+        children: 1,
+        DOB: 1,
+        state: 1,
+        city: 1,
+        bio: 1,
+        interesteds: 1,
+        mumStage: 1,
+        distanceKm: 1,
+        // Add any other fields you want (e.g. interesteds, city, state, subscription, etc.)
+      },
+    },
+    { $sort: { distanceMeters: 1 } },   // closest first
+    // { $skip: skip },
+    // { $limit: limit },
+  ];
+
+  const nearbyUsers = await UserModel.aggregate<NearbyUserResult>(pipeline);
+
+  return nearbyUsers;
+};
+
+//block user
+const blockUser = async () => {
+
+    //5km raduius
+
+    //excluding already exist friend
+
+    //return new mum
+}
+
+//increase matchCount of user by 1
+const checkMatchCount = async (userDetails: IJwtPayload) => {
+  const { profileId } = userDetails; 
+
+  const user = await UserModel.findById(profileId).select("subscription matchCount");
+
+  if (!user) {
+    throw new ApiError(404, "User not found to check user's match count.");
+  }
+
+  // 1️⃣ If user has subscription
+  if (user?.subscription?.isSubscribed) {
+     return null;
+  }else{
+
+    // 2️⃣ Check matchCount
+    if (user.matchCount < 3) {
+  
+      // increase match count
+      await UserModel.findByIdAndUpdate(profileId, {
+        $inc: { matchCount: 1 }
+      });
+  
+      return null;
+    }else{
+
+      // 3️⃣ Limit reached
+      throw new ApiError(403, "You have reached your limit. Please buy subscription plan for unlimited matching.");
+    }
+  }
+
+}
+
+
 //dashboard
 
 const getAllUserService = async () => {
@@ -219,13 +468,30 @@ const blockUserService = async (userId: string) => {
     };
 }
 
+const deleteUser = async (userDetails: IJwtPayload) => {
+
+  const {authId, profileId} = userDetails;
+    
+    // if(!userId){
+    //     throw new ApiError(400,"User id is required to block a user");
+    // }
+
+    const user = await AuthModel.findByIdAndDelete(authId);
+    const auth = await UserModel.findByIdAndDelete(authId);
+
+    return null
+
+}
+
 const UserServices = {
+    getUserProfile,
     updateUserProfile, 
     completeUserProfile,
-    // addLocationService,
+    addLocationService,
     // addBankDetailService,
     changePasswordService ,
-
+    getUsersAroundMe,
+    checkMatchCount,
     getAllUserService,
     blockUserService
 };

@@ -1,14 +1,31 @@
 import { z } from "zod";
 
+
+export const childrenValidationSchema = z.array(
+  z.object({
+    gender: z
+      .enum(["Male", "Female", "Other"])
+      .default("Male"),
+
+    dob: z
+      .coerce
+      .date({
+        message: "Child date of birth is required"
+      })
+      .max(new Date(), "Child date of birth cannot be in the future")
+      .default(new Date())
+  })
+).optional();
+
 export const updateprofileValidation = z.object({
     body: z.object({
-         name: z.string().min(1, "Name is required").optional(),
-        DOB: z.date().min(1, "Date of birth is required").optional(),
+        name: z.string().min(1, "Name is required").optional(),
+        DOB: z.coerce.date({message: "Date of birth is required"}).max(new Date(), "Date of birth cannot be in the future").optional(),
+        children: childrenValidationSchema,
         //  DOB: z.coerce.date().nullable().optional(),
         state: z.string().min(6, "state is required").optional(),
         city: z.string().min(6, "city is required").optional(),
         bio: z.string().min(6, "bio is required").optional(),
-        children: z.array(z.string()).min(1, "At least one child is required").optional(),
         currentImages: z.array(z.string()).optional(),
     }),
 });
@@ -16,25 +33,56 @@ export const updateprofileValidation = z.object({
 export const completeProfileValidation = z.object({
     body: z.object({
         name: z.string().min(1, "Name is required"),
-        DOB: z.date().min(1, "Date of birth is required"),
+        DOB: z.coerce
+        .date({
+            message: "Date of birth is required"
+        }).max(new Date(), "Date of birth cannot be in the future"),
         //  DOB: z.coerce.date().nullable().optional(),
-        state: z.string().min(6, "state is required"),
-        city: z.string().min(6, "city is required"),
-        bio: z.string().min(6, "bio is required"),
-        interesteds: z.array(z.string()).min(1, "At least one interest is required"),
-        mumStage: z.string().min(6, "Mum stage is required"),
-        phone: z.string().min(6, "Phone is required"),
+        state: z.string().min(1, "state is required"),
+        city: z.string().min(1, "city is required"),
+        bio: z.string().min(1, "bio is required").optional(),
+        interesteds: z
+            .array(z.string())
+            .min(3, "At least 3 interests are required")
+            .max(10, "Maximum 10 interests can be added"),
+        mumStage: z.string().min(1, "Mum stage is required"),
+        phone: z.string().min(1, "Phone is required"),
     }),
 });
 
+
 export const addLocationValidation = z.object({
-    body: z.object({
-        // role: z.string().min(1, "Role is required"),
-        location: z.string().min(1, "Location is required"),
-        // userId: z.string().min(1, "userId is required"),
-        // latitude: z.string().min(1, "Latitude is required"),
-        // longitude: z.string().min(1, "Longitude is required"),
-    }),
+  body: z.object({
+    address: z
+      .string()
+      .min(1, "Address is required")
+      .optional(),
+
+    latitude: z.coerce
+      .number()
+      .min(-90, "Latitude must be greater than or equal to -90")
+      .max(90, "Latitude must be less than or equal to 90"),
+
+    longitude: z.coerce
+      .number()
+      .min(-180, "Longitude must be greater than or equal to -180")
+      .max(180, "Longitude must be less than or equal to 180"),
+  }),
+});
+
+export const searchUserQueryValidation = z.object({
+  query: z.object({
+
+    latitude: z.coerce
+      .number()
+      .min(-90, "Latitude must be greater than or equal to -90")
+      .max(90, "Latitude must be less than or equal to 90"),
+
+    longitude: z.coerce
+      .number()
+      .min(-180, "Longitude must be greater than or equal to -180")
+      .max(180, "Longitude must be less than or equal to 180"),
+  }),
 });
 
 export const addBankDetailValidation = z.object({
@@ -62,5 +110,5 @@ const changePasswordValidation = z.object({
       ),
 });
 
-const UserValidations = { updateprofileValidation,completeProfileValidation ,addLocationValidation, addBankDetailValidation, changePasswordValidation };
+const UserValidations = { updateprofileValidation,completeProfileValidation ,addLocationValidation,searchUserQueryValidation, addBankDetailValidation, changePasswordValidation };
 export default UserValidations;

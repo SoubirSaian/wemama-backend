@@ -38,7 +38,7 @@ import { s3 } from "../config/awsS3";
 
 export const multerS3Storage = multerS3({
     s3,
-    bucket: process.env.AWS_BUCKET_NAME!,
+    bucket: process.env.S3_BUCKET_NAME!,
     acl: "public-read", // or private
     contentType: multerS3.AUTO_CONTENT_TYPE,
 

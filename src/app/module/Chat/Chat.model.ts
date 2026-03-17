@@ -41,7 +41,7 @@ const messageSchema = new Schema<IMessage>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    text: String,
+    text: {type: String, required: true},
     seen: {
       type: Boolean,
       default: false,

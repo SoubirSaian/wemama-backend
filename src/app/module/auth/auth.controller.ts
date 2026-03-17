@@ -45,7 +45,7 @@ const sendVerifyCode = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Verification code sent successfully.",
+        message: "Verification code sent successfully.Check your email.",
         data: result,
     });
 });

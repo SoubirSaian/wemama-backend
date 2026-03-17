@@ -1,6 +1,6 @@
 import ApiError from "../../../error/ApiError";
 import { IPayment, ITransferRecipientPayload } from "./Payment.interface";
-import PaymentModel from "./Payment.model";
+// import PaymentModel from "./Payment.model";
 
 const updateUserProfile = async () => {
     

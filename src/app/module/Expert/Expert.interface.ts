@@ -37,6 +37,15 @@ export interface ISession{
   description: string;
   time: Date;
   date: Date;
+  channelName: string;
+  recordingUrl: string;
+}
+
+export interface ISessionReport{
+  session: Types.ObjectId;
+  name : string;
+  email: string;
+  content: string;
 }
 
 export interface IExpertCredintial {

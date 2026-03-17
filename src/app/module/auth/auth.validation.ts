@@ -50,7 +50,7 @@ const sendVerifyCodeValidation = z.object({
 
 const resetPasswordValidation = z.object({
     body: z.object({
-        // email: z.string().trim().toLowerCase().email('Email must be a valid email'),
+        email: z.string().trim().toLowerCase().email('Email must be a valid email'),
         newPassword: z.string().min(4, 'New password must be at least 4 characters'),
         confirmPassword: z.string().min(4, 'Confirm password must be at least 4 characters'),
         

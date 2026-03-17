@@ -12,6 +12,7 @@ import config from "../../../config";
 import { Secret, SignOptions } from "jsonwebtoken";
 import { ENUM_SESSION_STATUS } from "../../../utilities/enum";
 
+//website Expert
 const expertRegisterationService = async (payload: IExpertCredintial) => {
 
     const session = await mongoose.startSession();
@@ -217,8 +218,7 @@ const getExpertProfile = async () => {
 
 }
 
-//session
-
+//session Website
 const createNewSession = async (payload: Partial<ISession>) => {
     const {expert, date, time, title, description, status} = payload;
 
@@ -238,6 +238,74 @@ const createNewSession = async (payload: Partial<ISession>) => {
     return newSession;
 }
 
+
+const getMySessions = async (userDetails: IJwtPayload,query: Record<string,unknown>) => {
+    const {profileId} = userDetails;
+    const {sessionStatus} = query;
+    let filter: any = {
+
+        expert : profileId
+    };
+
+    if(sessionStatus){
+        filter.status = sessionStatus;
+    }
+
+    const sessions = await SessionModel.find(filter).populate({ path: "expert", select: "name email image"}).lean();
+
+    return sessions;
+}
+
+const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
+    const {profileId} = userDetails;
+
+    const session = await SessionModel.findById(id);
+
+    //change session status
+    session.status = ENUM_SESSION_STATUS.ONGOING;
+
+    await session.save();
+
+    return session;
+}
+
+const FinishLiveSession = async (userDetails: IJwtPayload,id: string) => {
+    const {profileId} = userDetails;
+
+    const session = await SessionModel.findById(id);
+
+    //change session status
+    session.status = ENUM_SESSION_STATUS.COMPLETED;
+
+    await session.save();
+
+    return session;
+}
+
+const createSessionReport = async () => {
+    
+}
+
+const getSessionReport = async () => {
+
+}
+const deleteSessionReport = async () => {
+
+}
+
+//session app
+const getALLExpertSessions = async (query: Record<string,unknown>) => {
+    const {sessionStatus} = query;
+    let filter: Record<string, unknown> = {};
+
+    if(sessionStatus){
+        filter.status = sessionStatus;
+    }
+
+    const sessions = await SessionModel.find(filter).populate({ path: "expert", select: "name email image"}).lean();
+
+    return sessions;
+}
 
 const ExpertServices = { 
     expertRegisterationService,

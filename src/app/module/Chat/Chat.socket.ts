@@ -23,6 +23,17 @@ import * as ChatService from "./Chat.service";
 
 export const registerSocketHandlers = (socket: Socket) => {
 
+  // SEnd notification
+  // socket.on("new_notification", async (data) => {
+
+  //   const { senderId, receiverId, text } = data;
+
+  //   const message = await ChatService.sendMessage(senderId, receiverId, text);
+
+  //   // socket.emit("message_sent", message);
+
+  // });
+
   // SEND MESSAGE
   socket.on("send_message", async (data) => {
 
@@ -30,12 +41,14 @@ export const registerSocketHandlers = (socket: Socket) => {
 
     const message = await ChatService.sendMessage(senderId, receiverId, text);
 
-    socket.emit("message_sent", message);
+    // socket.emit("message_sent", message);
 
   });
 
   // GET CHAT LIST
-  socket.on("get_chat_list", async (userId) => {
+  socket.on("get_chat_list", async (data) => {
+
+    const { userId } = data;
 
     const chats = await ChatService.getChatList(userId);
 
@@ -44,7 +57,9 @@ export const registerSocketHandlers = (socket: Socket) => {
   });
 
   // GET MESSAGES
-  socket.on("get_messages", async (conversationId) => {
+  socket.on("get_messages", async (data) => {
+
+    const { conversationId } = data;
 
     const messages = await ChatService.getMessages(conversationId);
 
@@ -64,31 +79,37 @@ export const registerSocketHandlers = (socket: Socket) => {
   //send conversation request
   socket.on("send_conversation_request", async (data) => {
 
-    const { senderId, receiverId } = data;
+    const { receiverId } = data;
+    const senderId = socket.data.user.profileId
 
     const conversation = await ChatService.sendConversationRequest(
       senderId,
       receiverId
     );
 
+    // console.log(conversation);
+
   });
 
   //get all conversation
-  socket.on("get_conversation_requests", async (userId) => {
-
+  socket.on("get_conversation_requests", async () => {
+    const userId = socket.data.user.profileId
     const requests = await ChatService.getConversationRequests(userId);
 
-    socket.emit("conversation_requests", requests);
+    // console.log(requests);
+    // socket.emit("conversation_requests", requests);
 
   });
 
-//accept request
-socket.on("accept_conversation_request", async (conversationId) => {
+  //accept request
+  socket.on("accept_conversation_request", async (data) => {
 
-  const conversation = await ChatService.acceptConversationRequest(
-    conversationId
-  );
+    const { conversationId } = data;
 
-});
+    const conversation = await ChatService.acceptConversationRequest(
+      conversationId
+    );
+
+  });
 
 };

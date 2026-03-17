@@ -202,7 +202,15 @@ const verifyCode = async (payload:{email: string, verifyCode: string}) => {
     //     config.jwt_refresh_expires_in as string
     // );
 
-    return  {user,accessToken};
+    const newUser : object = {
+        // name: user?.name,
+        email: user?.email,
+        // phone: user?.phone,
+        // role: user.role,
+        
+    }
+
+    return  {user: newUser,accessToken};
 };
 
 const sendVerifyCodeService = async (payload:{email: string}) => {
@@ -233,7 +241,7 @@ const sendVerifyCodeService = async (payload:{email: string}) => {
 const resetPasswordService = async (payload: IResetPassword) => {
     const { email, newPassword } = payload;
 
-    const user = await UserModel.findOne({ email: email });
+    const user = await AuthModel.findOne({ email: email });
 
     if (!user) {
         throw new ApiError(404, 'This user does not exist to reset password');
@@ -271,7 +279,7 @@ const resetPasswordService = async (payload: IResetPassword) => {
     //     config.jwt_refresh_expires_in as string
     // );
 
-    return {user:{name:user.name,email:user.email}, accessToken };
+    return {user:{email:user.email}, accessToken };
 };
 
 

@@ -14,6 +14,19 @@ const getAllMood = catchAsync(async (req, res) => {
     });
 });
 
+const createMoodChip = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.createMoodChipService(req.body,req.file);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Mood chip created successfully.",
+        data: result,
+    });
+});
+
+
 const getALLMoodContent = catchAsync(async (req, res) => {
 
     const result = await MoodServices.getALLModdContentService(req.query);
@@ -41,6 +54,7 @@ const addMoodContent = catchAsync(async (req, res) => {
 });
 
 const MoodController = { 
+    createMoodChip,
     getAllMood,
     getALLMoodContent, 
     addMoodContent 

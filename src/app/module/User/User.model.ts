@@ -19,6 +19,10 @@ const UserSchema = new Schema<IUser>({
         type: String,
         default: ''
     },
+    profileImage: {
+        type: String,
+        default: ''
+    },
     images: [
         {
             type: String,
@@ -43,8 +47,8 @@ const UserSchema = new Schema<IUser>({
         default: ''
     },
     children:[{
-        type: Date,
-        default: null
+        gender: {type: String, default: "Male"},
+        dob: {type: Date, defalt: Date.now}
     }],
     DOB: {
         type: Date,
@@ -78,51 +82,19 @@ const UserSchema = new Schema<IUser>({
         isSubscribed: { type: Boolean, default: false },
         subscribedAt: { type: Date, default: null },
         expiredAt: { type: Date, default: null }
-    }
-   
+    },
+   matchCount: {
+    type: Number,
+    default: 0
+   }
     
     
 }, { timestamps: true });
 
-// UserSchema.pre('save', async function (next) {
-//     // eslint-disable-next-line @typescript-eslint/no-this-alias
-//     const user = this;
-//     if (user.password) {
-//         user.password = await bcrypt.hash(
-//             user.password,
-//             Number(config.bcrypt.salt_round)
-//         );
-//     }
-//     next();
-// });
+// In your user.model.ts
+UserSchema.index({ location: '2dsphere' });
 
-// UserSchema.post('save', function (doc, next) {
-//     doc.password = '';
-//     next();
-// });
 
-// // statics method for check is user exists
-// UserSchema.statics.isUserExists = async function (phoneNumber: string) {
-//     return await UserModel.findOne({ phoneNumber }).select('+password');
-// };
-
-// // statics method for check password match  ----
-// UserSchema.statics.isPasswordMatched = async function (
-//     plainPasswords: string,
-//     hashPassword: string
-// ) {
-//     return await bcrypt.compare(plainPasswords, hashPassword);
-// };
-
-// UserSchema.statics.isJWTIssuedBeforePasswordChange = async function (
-//     passwordChangeTimeStamp,
-//     jwtIssuedTimeStamp
-// ) {
-//     const passwordChangeTime =
-//         new Date(passwordChangeTimeStamp).getTime() / 1000;
-
-//     return passwordChangeTime > jwtIssuedTimeStamp;
-// };
 
 const UserModel = models.User || model<IUser>("User", UserSchema);
 

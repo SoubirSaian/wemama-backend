@@ -1,33 +1,42 @@
 import { Server } from "socket.io";
 import { registerSocketHandlers } from "../app/module/Chat/Chat.socket";
+import { socketAuthMiddleware } from "../app/middlewares/auth";
+
 
 let io: Server;
 
 //socket initialization server
 export const initSocket = (server: any) => {
+
   io = new Server(server, {
     cors: {
       origin: "*",
     },
   });
 
+  // ✅ apply auth middleware
+  io.use(socketAuthMiddleware);
+
   io.on("connection", (socket) => {
-    console.log("User connected", socket.id);
 
-    socket.on("join", (userId: string) => {
-      socket.join(userId);
-    });
+    const userId = socket.data.user.profileId;
 
-    //all socket event
+    console.log("User connected:", userId);
+
+    // ✅ auto join room (no need frontend join)
+    socket.join(userId);
+
+    // all socket events
     registerSocketHandlers(socket);
 
     socket.on("disconnect", () => {
-      console.log("User disconnected");
+      console.log("User disconnected:", userId);
     });
+
   });
 };
 
-//soxket connection io
+//socket connection io
 export const getIO = () => {
   if (!io) throw new Error("Socket not initialized");
   return io;

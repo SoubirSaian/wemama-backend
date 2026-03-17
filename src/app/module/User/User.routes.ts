@@ -9,29 +9,65 @@ import {uploadProfile} from "../../middlewares/multerMiddleware";
 const userRouter = express.Router();
 
 
+userRouter.get("/get-profile-detail",
+    // auth(["Supplier","Customer"]),
+    authorizeUser,
+    UserController.getProfileDetail
+);
+
+// userRouter.patch("/update-profile",
+//     // auth(["Supplier","Customer"]),
+//     authorizeUser,
+//     uploadProfile.array('profile-image', 4),
+//     validateRequest(UserValidations.updateprofileValidation),
+//     UserController.updateProfile
+// );
+
 userRouter.patch("/update-profile",
     // auth(["Supplier","Customer"]),
-    uploadProfile.array('profile-image', 4),
+    authorizeUser,
+    // uploadProfile.single('profile-image'),
+    // uploadProfile.array('description-image', 4),
+    uploadProfile.fields([
+        { name: "profile-image", maxCount: 1 },
+        { name: "description-image", maxCount: 4 }
+    ]),
     validateRequest(UserValidations.updateprofileValidation),
     UserController.updateProfile
 );
 
-userRouter.patch("/complete-profile",
+userRouter.post("/complete-profile",
     // auth(["Supplier","Customer"]),
+    authorizeUser,
     uploadProfile.single('profile-image'),
     validateRequest(UserValidations.completeProfileValidation),
-    UserController.updateProfile
+    UserController.completeProfile
 );
 
 userRouter.patch("/change-password",
     // auth(["Supplier","Customer"]),
+    authorizeUser,
     validateRequest(UserValidations.changePasswordValidation),
     UserController.changePassword
 );
 
+userRouter.post("/add-location",
+    // auth(["Supplier","Customer"]),
+    authorizeUser,
+    validateRequest(UserValidations.addLocationValidation),
+    UserController.addLocationController
+);
+
+userRouter.get("/match-user",
+    // auth(["Supplier","Customer"]),
+    authorizeUser,
+    validateRequest(UserValidations.searchUserQueryValidation),
+    UserController.matchUserController
+);
+
 //dashboard
 
-userRouter.get("/get-al-user",
+userRouter.get("/get-all-user",
     // auth(["Supplier","Customer"]),
     // validateRequest(UserValidations.addBankDetailValidation),
     UserController.dashboardGetUser
