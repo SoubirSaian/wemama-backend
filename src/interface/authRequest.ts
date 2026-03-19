@@ -6,5 +6,18 @@ export interface AuthRequest extends Request {
     authId: string;
     email: string;
     profileId: string;
-  };
+  },
+  admin: {
+    authId: string;
+    email: string;
+    profileId: string;
+  },
+}
+
+export interface AdminAuthRequest extends Request {
+  admin: {
+    authId: string;
+    email: string;
+    profileId: string;
+  },
 }

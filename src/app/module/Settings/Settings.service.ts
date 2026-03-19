@@ -15,9 +15,40 @@ const submitHelpAndSupportService = async (payload: IHelpAndSupport) => {
     return result;
 };
 
-const getHelpAndSupportService = async () => {
+const getHelpAndSupportService = async (query: Record<string,unknown>) => {
 
-    const result = await SettingsModel.HelpAndSupportModel.find({}).lean();
+    let {page} = query;
+
+    page = parseInt(page as any) || 1;
+    let limit = 10;
+    let skip = (page as number - 1) * limit;
+
+
+    const [supports, totalSupport] = await Promise.all([
+
+        SettingsModel.HelpAndSupportModel.find({})
+           .sort({createdAt: -1})
+               .skip(skip).limit(limit)
+                   .lean(),
+    
+        SettingsModel.HelpAndSupportModel.countDocuments({})
+    ])
+
+    const totalPage = Math.ceil(totalSupport / limit);
+
+    return {
+        meta:{page,limit: 10,total: totalSupport, totalPage},
+        supports
+    };
+};
+
+const getSingleSupportService = async (id: string) => {
+
+    const result = await SettingsModel.HelpAndSupportModel.findById(id);
+
+    if (!result) {
+        throw new ApiError(500, "Failed to get this support.");
+    }
 
     return result;
 };
@@ -152,6 +183,7 @@ const deleteFaqService = async (id: string) => {
 const SettingsServices = { 
     submitHelpAndSupportService,
     getHelpAndSupportService,
+    getSingleSupportService,
     deleteHelpAndSupportService,
     getPrivacyPolicy,
     editPrivacyPolicy,

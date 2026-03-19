@@ -1,5 +1,6 @@
 import { model, models, Schema } from "mongoose";
 import { IAdmin } from "./Dashboard.interface";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 
@@ -13,21 +14,23 @@ const adminSchema = new Schema<IAdmin>({
         required: [true,"Admin email is required."],
         unique: true
     },
-    contact:{
-        type: String,
-        default: ''
-    },
-    address:{
-        type: String,
-        default: ''
-    },
     password:{
         type: String,
         required: [true,"Admin password is required."]
     },
+    image: {
+        type: String,
+        default: ''
+    },
+    phone:{
+        type: String,
+        default: ''
+        // required: [true,"Admin phone number is required."]
+    },
     role:{
         type: String,
-        default: "Admin"
+        enum: Object.values(ENUM_ADMIN_ROLE),
+        default: ENUM_ADMIN_ROLE.ADMIN
     },
     verificationCode: {
         type: String,

@@ -37,6 +37,7 @@ const registerUserService = async (payload: IAuth) => {
         const userDataPayload: Partial<IAuth> = {
             email: email.toLowerCase(),
             password,
+            role: "USER",
             verificationCode: code,
         };
 
@@ -92,14 +93,14 @@ const loginUserService = async (payload: TLoginUser) => {
     const {email,password} = payload;
 
     // Service logic goes here
-    const user = await AuthModel.findOne({ email: email.toLowerCase() });
+    const user = await AuthModel.findOne({ email: email.toLowerCase()});
 
     if (!user) {
-        throw new ApiError(404, 'This user does not exist');
+        throw new ApiError(404, 'This user does not exist.Please sign up.');
     }
     
     if (user.isBlocked) {
-        throw new ApiError(403, 'This user is blocked');
+        throw new ApiError(403, 'This user is blocked. Please contact admin.');
     }
     // if (!user.isVerified) {
     //     throw new ApiError(

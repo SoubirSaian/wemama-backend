@@ -2,32 +2,35 @@ import { Types } from "mongoose";
 import { number } from "zod";
 
 export interface IExpert {
-  name: string
-  phone: string
-  email: string
-  image?: string
-  country: string
-  city: string
+  auth: Types.ObjectId;
+  name: string;
+  phone: string;
+  email: string;
+  image?: string;
+  country: string;
+  city: string;
+  signature: string;
+  date: Date;
   profession: {
     designation: string,
     title: string,
     experience: number,
-  }
+  };
   license:{
       qualification: string
-      number: string,
+      certificate: string,
       proof: string
-  }
+  };
   session : {
-        topic: string,
-        format: string,
-        length: string,
-    }
-
-    availability: {
-        day: string,
-        time: string
-    }
+      topic: string,
+      format: string,
+      length: string,
+  };
+  availability: {
+      day: string,
+      timezone: string
+  };
+  isApproved: boolean;
 }
 
 export interface ISession{
@@ -35,10 +38,11 @@ export interface ISession{
   status: string;
   title: string;
   description: string;
-  time: Date;
+  time: string;
   date: Date;
   channelName: string;
   recordingUrl: string;
+  isApproved: boolean;
 }
 
 export interface ISessionReport{

@@ -35,6 +35,24 @@ MoodRouter.post("/add-mood-content",
     MoodController.addMoodContent
 );
 
+MoodRouter.post("/add-mood-image",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.addMoodImage
+);
+
+MoodRouter.patch("/edit-mood-content/:id",
+    // auth(["Supplier","Customer"]),
+    validateRequest(MoodValidations.editMoodContent),
+    MoodController.editMoodContent
+);
+
+MoodRouter.delete("/delete-mood-content/:id",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.deleteMoodContent
+);
+
 
 
 export default MoodRouter;

@@ -4,6 +4,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import UserValidations from "./User.validation";
 import UserController from "./User.controller";
 import {uploadProfile} from "../../middlewares/multerMiddleware";
+import { checkMatchLimit } from "../../middlewares/subscription";
 
 
 const userRouter = express.Router();
@@ -61,6 +62,7 @@ userRouter.post("/add-location",
 userRouter.get("/match-user",
     // auth(["Supplier","Customer"]),
     authorizeUser,
+    // checkMatchLimit,
     validateRequest(UserValidations.searchUserQueryValidation),
     UserController.matchUserController
 );

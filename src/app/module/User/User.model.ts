@@ -80,6 +80,7 @@ const UserSchema = new Schema<IUser>({
     },
     subscription: {
         isSubscribed: { type: Boolean, default: false },
+        planPrice: {type: String, default: ''},
         subscribedAt: { type: Date, default: null },
         expiredAt: { type: Date, default: null }
     },

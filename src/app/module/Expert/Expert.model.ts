@@ -3,12 +3,15 @@ import { IExpert, ISession } from "./Expert.interface";
 import { ENUM_SESSION_STATUS } from "../../../utilities/enum";
 
 const ExpertSchema = new Schema<IExpert>({
+    auth: { type: Schema.Types.ObjectId, ref: "Auth"},
     name: { type: String, default: "" },
     phone: { type: String , default: ""},
     email: { type: String, required: true, unique: true },
     image: { type: String, default: "" },
     country: { type: String , default: ""},
     city: { type: String, default: "" },
+    signature: { type: String, default: "" },
+    date: { type: Date, default: Date.now },
     profession: {
         title: { type: String, default: "" },
         designation: { type: String, default: "" },
@@ -16,7 +19,7 @@ const ExpertSchema = new Schema<IExpert>({
     },
     license:{
         qualification: { type: String, default: "" },
-        number: { type: String, default: "" },
+        certificate: { type: String, default: "" },
         proof: { type: String, default: "" }
     },
     session : {
@@ -26,8 +29,9 @@ const ExpertSchema = new Schema<IExpert>({
     },
     availability: {
         day: { type: String, default: "" },
-        time: { type: String, default: "" }
-    }
+        timezone: { type: String, default: "" }
+    },
+    isApproved: {type: Boolean, default: false}
 }, { timestamps: true });
 
 
@@ -44,10 +48,11 @@ const SessionSchema = new Schema<ISession>({
     },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    time: { type: Date, required: true },
+    time: { type: String, required: true },
     date: { type: Date, required: true },
     channelName: { type: String, default: '' },
-    recordingUrl: { type: String, default: ''}
+    recordingUrl: { type: String, default: ''},
+    isApproved: {type: Boolean, default: false}
 }, { timestamps: true });
 
 

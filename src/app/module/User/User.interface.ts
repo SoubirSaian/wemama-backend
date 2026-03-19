@@ -19,6 +19,7 @@ export interface IUser {
     mumStage: string;
     subscription: {
         isSubscribed: boolean;
+        planPrice: string;
         subscribedAt: Date;
         expiredAt: Date;
     };
@@ -55,6 +56,7 @@ export interface NearbyUserResult {
   bio?: string;
   interesteds: string[];
   mumStage?: string;
+  matchCount: number;
   distanceKm: number;
 }
 

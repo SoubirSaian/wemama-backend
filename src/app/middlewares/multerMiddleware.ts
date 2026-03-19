@@ -1,5 +1,5 @@
 import multer from "multer";
-import { profileStorage } from "../../helper/multer";
+import { expertFileStorage, profileStorage } from "../../helper/multer";
 import { multerS3Storage } from "../../helper/multerS3";
 
 
@@ -27,23 +27,30 @@ import { multerS3Storage } from "../../helper/multerS3";
    },
  });
 
- // upload post image
- export const uploadPostImage = multer({
-   storage: profileStorage,
+ // upload expert file
+ export const uploadExpertFile = multer({
+   storage: expertFileStorage,
  
    limits: {
-     fileSize: 3145728, // 3MB . less than 3mb file allowed
-    //  fieldSize: 3 * 1024 *1024
+     //fileSize: 3145728, // 3MB . less than 3mb file allowed
+     fieldSize: 10 * 1024 *1024
    },
  
    fileFilter: (req, file, cb) => {
     
-       if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg" ) {
+      const allowedMimeTypes = [
+       "image/png",
+       "image/jpg",
+       "image/jpeg",
+       "file/pdf",
+      ];
+    
+       if (allowedMimeTypes.includes(file.mimetype)) {
  
          cb(null, true);
  
        } else {
-         cb(new Error("Only .jpg, .png or .jpeg format allowed!"));
+         cb(new Error("Only .jpg, .png , .jpeg or .pdf format allowed!"));
        }
      
    },

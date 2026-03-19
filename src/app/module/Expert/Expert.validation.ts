@@ -20,6 +20,14 @@ const expertRegistrationValidation = z.object({
       ),
 });
 
+const expertLoginValidationSchema = z.object({
+    body: z.object({
+        email: z.string().email('Email must be a valid email'),
+        password: z.string().min(6, 'Password must be at least 6 characters'),
+        role: z.string().min(1, 'Role is required.'),
+    }),
+});
+
 
 export const expertValidationSchema = z.object({
     body: z.object({
@@ -62,7 +70,7 @@ export const expertValidationSchema = z.object({
 export const sessionValidationSchema = z.object({
     body: z.object({
 
-        expert: z.string().min(24, "Expert id is required"),
+        // expert: z.string().min(24, "Expert id is required"),
       
         status: z.string().min(5, "Session status is required").optional(),
       
@@ -70,7 +78,9 @@ export const sessionValidationSchema = z.object({
       
         description: z.string().min(1, "Description is required"),
 
-        date: z.string().min(1, "Session date is required"),
+        date: z.coerce.date({
+            message: "Date of birth is required"
+        }).min(new Date(), "Date of birth cannot be in the past"),
 
         time: z.string().min(1, "Session time is required"),
       
@@ -81,6 +91,7 @@ export const sessionValidationSchema = z.object({
 
 const ExpertValidations = { 
     expertRegistrationValidation,
+    expertLoginValidationSchema,
     expertValidationSchema,
     sessionValidationSchema
  };

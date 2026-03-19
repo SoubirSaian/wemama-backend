@@ -11,8 +11,16 @@ const addMoodContent = z.object({
     }),
 });
 
+const editMoodContent = z.object({
+    body: z.object({
+        title: z.string().min(1, "Title is required").optional(),
+        description: z.string().min(1, "Description is required").optional(),
+    }),
+});
+
 const MoodValidations = { 
     addMoodContent,
+    editMoodContent
  };
 
 export default MoodValidations;

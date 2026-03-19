@@ -1,3 +1,4 @@
+import { get } from "http";
 import { AuthRequest } from "../../../interface/authRequest";
 import catchAsync from "../../../utilities/catchasync";
 import sendResponse from "../../../utilities/sendResponse";
@@ -56,9 +57,9 @@ const adminSendVerifyCode = catchAsync(async (req, res) => {
 
 const adminResetPassword = catchAsync(async (req, res) => {
 
-     const { user } = req as AuthRequest;
+    //  const { user } = req as AuthRequest;
     
-    const result = await DashboardService.adminResetPasswordService(user,req.body);
+    const result = await DashboardService.adminResetPasswordService(req.body);
 
     sendResponse(res, {
         statusCode: 200,
@@ -101,8 +102,8 @@ const changeAdminPassword = catchAsync(
 
 const deleteAdminAccount = catchAsync(
     async (req,res) => {
-         const { user } = req as AuthRequest;
-        const result = await DashboardService.deleteAdminService(user);
+        //  const { user } = req as AuthRequest;
+        const result = await DashboardService.deleteAdminService(req.params.id);
 
         sendResponse(res,{
             statusCode: 200,
@@ -113,18 +114,6 @@ const deleteAdminAccount = catchAsync(
     }
 );
 
-const dashboardStat = catchAsync(
-    async (req,res) => {
-        const result = await DashboardService.loginAdminService(req.body);
-
-        sendResponse(res,{
-            statusCode: 201,
-            success: true,
-            message: "Got website stat",
-            data: result
-        });
-    }
-);
 
 const blockAdmin = catchAsync(
     async (req,res) => {
@@ -139,6 +128,37 @@ const blockAdmin = catchAsync(
     }
 );
 
+const getAllAdmin = catchAsync(
+    async (req,res) => {
+
+        const result: any = await DashboardService.getAllAdminService(req.query);
+
+        sendResponse(res,{
+            statusCode: 200,
+            success: true,
+            message: "Retrieved all admin.",
+            meta: result.meta,
+            data: result.allAdmin
+        });
+    }
+);
+
+const getAdminDetail = catchAsync(
+    async (req,res) => {
+
+        const { user } = req as AuthRequest;
+
+        const result: any = await DashboardService.getAdminDetailsService(user);
+
+        sendResponse(res,{
+            statusCode: 200,
+            success: true,
+            message: "Retrieved admin details.",
+            data: result
+        });
+    }
+);
+
 
 const DashboardController = {
     adminRegister,
@@ -149,8 +169,9 @@ const DashboardController = {
     editAdminProfile,
     changeAdminPassword,
     deleteAdminAccount,
-    dashboardStat,
-    blockAdmin
+    blockAdmin,
+    getAllAdmin,
+    getAdminDetail
 }
 
 export default DashboardController;

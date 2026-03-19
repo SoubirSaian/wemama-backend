@@ -6,6 +6,11 @@ export const ENUM_USER_ROLE = {
     EXPART: "EXPERT"
 }
 
+export const ENUM_ADMIN_ROLE = {
+    ADMIN: "ADMIN",
+    SUPER_ADMIN: "SUPER_ADMIN",
+}
+
 export const ENUM_SESSION_STATUS= {
    ONGOING: "Ongoing",
    UPCOMING: "Upcoming",

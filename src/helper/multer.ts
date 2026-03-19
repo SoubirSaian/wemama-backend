@@ -25,6 +25,28 @@ import path from 'path';
      cb(null, fileName + fileExtension);
    },
  });
+
+ // define storage for images
+ export const expertFileStorage = multer.diskStorage({
+  
+   destination: (req, file, cb) => {
+     cb(null, "uploads/expert-file");
+   },
+  //  destination: function (req: Request, file, cb) {
+  //      let uploadPath = `uploads/${file.fieldname}`;
+ 
+  //      cb(null, uploadPath);
+  //  },
+ 
+   filename: (req, file, cb) => {
+     //extract the file extension from filename
+     const fileExtension = path.extname(file.originalname);
+ 
+     const fileName = file.originalname.replace(fileExtension, "").toLowerCase().split(" ").join("-") +"-" + Date.now();
+ 
+     cb(null, fileName + fileExtension);
+   },
+ });
  
  
 

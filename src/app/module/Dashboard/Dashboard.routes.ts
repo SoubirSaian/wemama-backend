@@ -4,14 +4,15 @@ import {auth, authorizeUser} from "../../middlewares/auth";
 import { adminLoginValidation, changeAdminPasswordValidation, createAdminvalidation, editProfilevalidation } from "./Dashboard.validation";
 import DashboardController from "./Dashboard.controller";
 import AuthValidations from "../auth/auth.validation";
-import { uploadProfile } from "../../../helper/multer";
+import { uploadProfile } from "../../middlewares/multerMiddleware";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 
 const dashboardRouter = express.Router();
 
 dashboardRouter.post("/create-admin",
-    // auth(["Super_Admin"]),
+    auth([ENUM_ADMIN_ROLE.SUPER_ADMIN]),
     validateRequest(createAdminvalidation),
     DashboardController.adminRegister
 );
@@ -46,7 +47,7 @@ dashboardRouter.patch("/edit-admin-profile",
     DashboardController.editAdminProfile
 );
 
-dashboardRouter.patch("/change-admin-password",
+dashboardRouter.patch("/admin-change-password",
     // auth(["Super_Admin"]),
     authorizeUser,
     validateRequest(changeAdminPasswordValidation),
@@ -54,23 +55,30 @@ dashboardRouter.patch("/change-admin-password",
 );
 
 dashboardRouter.delete("/delete-admin",
-    // auth(["Super_Admin"]),
-    authorizeUser,
+    auth([ENUM_ADMIN_ROLE.SUPER_ADMIN]),
     // validateRequest(adminLoginValidation),
     DashboardController.deleteAdminAccount
 );
 
 dashboardRouter.post("/block-admin/:id",
-    // auth(["Super_Admin"]), only super admin can block a admin
+    auth([ENUM_ADMIN_ROLE.SUPER_ADMIN]), //only super admin can block a admin
     // validateRequest(adminLoginValidation),
     DashboardController.blockAdmin
 );
 
-dashboardRouter.get("/dashboard-stat",
-    // auth(["Super_Admin"]),
+dashboardRouter.get("/get-all-admin",
+    auth([ENUM_ADMIN_ROLE.SUPER_ADMIN]), //only super admin can get al admin
     // validateRequest(adminLoginValidation),
-    DashboardController.dashboardStat
+    DashboardController.getAllAdmin
 );
+
+dashboardRouter.get("/get-admin-detail",
+    // auth(["Super_Admin"]), only super admin can block a admin
+    authorizeUser,
+    // validateRequest(adminLoginValidation),
+    DashboardController.getAdminDetail
+);
+
 
 
 

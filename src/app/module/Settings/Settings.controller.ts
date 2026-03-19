@@ -17,12 +17,24 @@ const submitHelpAndSupport = catchAsync(async (req, res) => {
 
 const getHelpAndSupport = catchAsync(async (req, res) => {
 
-    const result = await SettingsServices.getHelpAndSupportService();
+    const result = await SettingsServices.getHelpAndSupportService(req.query);
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: "retrieved all report.",
+        data: result,
+    });
+});
+
+const getSingleSupport = catchAsync(async (req, res) => {
+
+    const result = await SettingsServices.getSingleSupportService(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved a report successfully.",
         data: result,
     });
 });
@@ -170,6 +182,7 @@ const deleteFaq = catchAsync(async (req: Request, res: Response) => {
 const SettingsController = { 
     submitHelpAndSupport,
     getHelpAndSupport,
+    getSingleSupport,
     deleteHelpAndSupport,
     getTermsConditions,
     getPrivacyPolicy,

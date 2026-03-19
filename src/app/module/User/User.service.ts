@@ -55,7 +55,7 @@ const updateUserProfile = async (
   // console.log("removedImages:", removedImages);
   //update profile image
   if (profileImage) {
-      newProfileImage = `uploads/profile-image/${profileImage[0]?.filename}`;   
+      newProfileImage = `uploads/profile-image/${profileImage?.filename}`;   
       //delete old image
       deleteOldFile(profile.profileImage);
   }
@@ -97,11 +97,11 @@ const completeUserProfile = async (userDetails: IJwtPayload, file: Express.Multe
     let updateData: any = { ...payload };
 
     if (file) {
-        updateData.$push = {
-            profileImage: `uploads/profile-image/${file.filename}`
-        };
+        updateData.profileImage =  `uploads/profile-image/${file.filename}`;
     }
+
     // console.log(updateData);
+    // console.log(typeof profileImage, profileImage);
 
     const profile = await UserModel.findByIdAndUpdate(
         profileId,
@@ -209,10 +209,6 @@ const changePasswordService = async (userDetails: IJwtPayload, payload: IChangeP
 }
 
 
-
-
-
-
 /**
  * Service: Get users within a radius (default 10km) using $geoNear
  * - Excludes the logged-in user
@@ -228,106 +224,8 @@ export const getUsersAroundMe = async (
     const {profileId} = userDetails;
     const {longitude,latitude} = query;
 
-    let radiusKm = 50;
+    let radiusKm = 500;
     const profileObjId = new Types.ObjectId(profileId);
-
-//     const excludedIds = new Set<string>();
-// conversations.forEach((conv) => {
-//   conv.participants.forEach((participantId: any) => {
-//     const idStr = participantId.toString();
-//     if (idStr !== userId.toString()) {
-//       excludedIds.add(idStr);
-//     }
-//   });
-// });
-// const excludedObjectIds = Array.from(excludedIds, (id) => new Types.ObjectId(id));
-
-//     // When building excluded:
-//   const excludedObjectIds = Array.from(excludedIdsSet).map(
-//     id => new Types.ObjectId(id)
-//   );
-
-//   // ────────────────────────────────────────────────
-//   //  Most important optimization: get excluded IDs early & efficiently
-//   // ────────────────────────────────────────────────
-//   const excludedIds = await ConversationModel.distinct('participants', {
-//     participants: profileId,
-//     // you can add: status: { $in: ['pending', 'accepted'] } if needed
-//   });
-
-//   const excluded = excludedIds
-//     .filter(id => !id.equals(profileId))     // remove self
-//     .map(id => new Types.ObjectId(id));
-
-//   // ────────────────────────────────────────────────
-//   //  Single aggregation – sample + filters
-//   // ────────────────────────────────────────────────
-//   const pipeline: PipelineStage[] = [
-//     {
-//       $geoNear: {
-//         near: { type: 'Point', coordinates: [Number(longitude), Number(latitude)] },
-//         distanceField: 'distanceMeters',
-//         maxDistance: radiusKm * 1000,
-//         spherical: true,
-//         query: {
-//           $and: [
-//             { _id: { $ne: profileId } },
-//             { _id: { $nin: excluded } }
-//           ]
-//         },
-//       },
-//     },
-//     {
-//       $addFields: {
-//         distanceKm: { $round: [{ $divide: ['$distanceMeters', 1000] }, 2] }
-//       }
-//     },
-//     {
-//       $project: {
-//         _id: 1,
-//         name: 1,
-//         images: 1,
-//         children:1,
-//         bio: 1,
-//         mumStage: 1,
-//         distanceKm: 1,
-//       }
-//     },
-//     // Instead of sort → skip → limit
-//     // We use $sample for "feels fresh" experience
-//     { $sample: { size: 1 } },
-//   ];
-
-  // 2. Find all users who already have a conversation with the current user
-  // const conversations = await ConversationModel.find({
-  //   participants: profileId,
-  // }).select('participants -_id');
-
-  // const excludedIds = new Set<string>();
-  // conversations.forEach((conv) => {
-  //   conv.participants.forEach((participantId: any) => {
-  //     const idStr = participantId.toString();
-  //     if (idStr !== profileId.toString()) {
-  //       excludedIds.add(idStr);
-  //     }
-  //   });
-  // });
-
-  // const excludedObjectIds = Array.from(excludedIds, (id) => new Types.ObjectId(id));
-
-  //   // 1. Get excluded users (as ObjectIds from the beginning)
-  // const excludedParticipantIds = await ConversationModel.distinct(
-  //   "participants",
-  //   { participants: profileObjId }
-  // );
-
-  // // Remove self & convert everything to ObjectId
-  // const finalExcludedIds = excludedParticipantIds
-  //   .filter(id => !id.equals(profileObjId))
-  //   .map(id => new Types.ObjectId(id));
-
-  // // Add self explicitly (belt & suspenders)
-  // finalExcludedIds.push(profileObjId);
 
   // 1. Get excluded users (as ObjectIds from the beginning)
   const excludedParticipantIds = await ConversationModel.distinct(
@@ -342,23 +240,23 @@ export const getUsersAroundMe = async (
 
   // Add self explicitly (belt & suspenders)
   finalExcludedIds.push(profileObjId);
-
+  console.log("Excluded IDs:", finalExcludedIds);
   // 3. Aggregation pipeline with $geoNear (MUST be the first stage)
   const pipeline: PipelineStage[] = [
     {
-    $geoNear: {
-      near: {
-        type: 'Point',
-        coordinates: [Number(longitude), Number(latitude)],
-      },
-      distanceField: 'distanceMeters',
-      maxDistance: radiusKm * 1000,
-      spherical: true,
-      query: {
-        _id: { $nin: finalExcludedIds }     // ← only one condition, very safe
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [Number(longitude), Number(latitude)],
+        },
+        distanceField: 'distanceMeters',
+        maxDistance: radiusKm * 1000,
+        spherical: true,
+        query: {
+          _id: { $nin: finalExcludedIds }     // ← only one condition, very safe
+        },
       },
     },
-  },
     {
       $addFields: {
         distanceKm: { $round: [{ $divide: ['$distanceMeters', 1000] }, 2] },
@@ -379,6 +277,7 @@ export const getUsersAroundMe = async (
         bio: 1,
         interesteds: 1,
         mumStage: 1,
+        matchCount: 1,
         distanceKm: 1,
         // Add any other fields you want (e.g. interesteds, city, state, subscription, etc.)
       },
@@ -439,18 +338,39 @@ const checkMatchCount = async (userDetails: IJwtPayload) => {
 
 //dashboard
 
-const getAllUserService = async () => {
-    const users = await UserModel.find({}).lean();
-    return users;
+const getAllUserService = async (query: Record<string,unknown>) => {
+    let {page} = query;
+
+    page = parseInt(page as any) || 1;
+    let limit = 10;
+    let skip = (page as number - 1) * limit;
+
+
+    const [users, totalUser] = await Promise.all([
+
+        UserModel.find({})
+           .sort({createdAt: -1})
+               .skip(skip).limit(limit)
+                   .lean(),
+    
+        UserModel.countDocuments({})
+    ])
+
+    const totalPage = Math.ceil(totalUser / limit);
+
+    return {
+        meta:{page,limit: 10,total: totalUser, totalPage},
+        users
+    };
 }
 
-const blockUserService = async (userId: string) => {
+const blockUserService = async (id: string) => {
     
-    if(!userId){
-        throw new ApiError(400,"User id is required to block a user");
-    }
+    // if(!userId){
+    //     throw new ApiError(400,"User id is required to block a user");
+    // }
 
-    const user = await UserModel.findById(userId);
+    const user = await AuthModel.findById(id);
 
     if(!user){
         throw new ApiError(404,"User not found to block.");

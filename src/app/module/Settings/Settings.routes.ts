@@ -21,6 +21,14 @@ settingsRouter.get(
     // validateRequest(SettingsValidations.helpAndSupportValidation),
     SettingsController.getHelpAndSupport
 );
+
+settingsRouter.get(
+    "/get-single-contact/:id",
+    // auth(),
+    // validateRequest(SettingsValidations.helpAndSupportValidation),
+    SettingsController.getSingleSupport
+);
+
 settingsRouter.delete(
     "/delete-contact-us/:id",
     // auth(),

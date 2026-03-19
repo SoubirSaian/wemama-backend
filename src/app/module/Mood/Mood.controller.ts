@@ -53,11 +53,50 @@ const addMoodContent = catchAsync(async (req, res) => {
     });
 });
 
+const addMoodImage = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.editMoodPhotoService(req.file,req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Added moog image successfully.",
+        data: result,
+    });
+});
+
+const editMoodContent = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.editMoodContentService(req.params.id,req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Mood content updated successfully.",
+        data: result,
+    });
+});
+
+const deleteMoodContent = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.deleteMoodContentService(req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Mood content deleted successfully.",
+        data: result,
+    });
+});
+
 const MoodController = { 
     createMoodChip,
     getAllMood,
     getALLMoodContent, 
-    addMoodContent 
+    addMoodContent,
+    addMoodImage,
+    editMoodContent,
+    deleteMoodContent 
 };
 
 export default MoodController;

@@ -9,8 +9,8 @@ import  UserModel  from '../module/User/User.model';
 // import SuperAdmin from '../modules/superAdmin/superAdmin.model';
 import { verifyToken } from '../../helper/jwtHelper';
 // import { ENUM_USER_ROLE } from '../../utilities/enum';
-import { AuthRequest } from '../../interface/authRequest';
-import { IJwtPayload } from '../../interface/jwt.interface';
+import { AdminAuthRequest, AuthRequest } from '../../interface/authRequest';
+import { IJwtAdminPayload, IJwtPayload } from '../../interface/jwt.interface';
 import { Socket } from 'socket.io';
 
 export const auth =
@@ -30,16 +30,6 @@ export const auth =
       if (tokenWithBearer.startsWith("Bearer")) {
 
         const token = tokenWithBearer.split(" ")[1];
-        // let decoded;
- 
-            // try {
-            //     decoded = jwt.verify(
-            //         token,
-            //         config.jwt.secret as string
-            //     ) as JwtPayload;
-            // } catch (err) {
-            //     throw new ApiError(401, 'Token is expired');
-            // }
 
         const decoded = verifyToken(token, config.jwt.secret as Secret);
         if(!decoded){
@@ -47,7 +37,7 @@ export const auth =
         }
 
 
-        (req as AuthRequest).user = decoded as IJwtPayload;
+        (req as AuthRequest).admin = decoded as any;
         // (req as AuthRequest).user = {
         //   userId: decoded.userId,
         //   profileId: decoded.profileId,

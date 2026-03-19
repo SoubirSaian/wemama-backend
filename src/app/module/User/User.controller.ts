@@ -110,7 +110,7 @@ const matchUserController = catchAsync(async (req, res) => {
 
 const dashboardGetUser = catchAsync(async (req, res) => {
 
-    const result = await UserServices.getAllUserService();
+    const result = await UserServices.getAllUserService(req.query);
     
     sendResponse(res, {
         statusCode: 200,
