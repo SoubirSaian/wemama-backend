@@ -149,6 +149,19 @@ const addLocationService = async (userDetails: JwtPayload,payload: IAddLocation)
    
 }
 
+//socket/ new request get profile
+const getFriendProfileService = async (query: Record<string,unknown>) => {
+
+    const { profileId } = query;
+
+    const profile = await UserModel.findById(profileId).lean();
+
+    if (!profile) {
+        throw new ApiError(404, "User profile not found.");
+    }
+
+    return profile;
+}
 
 // const addBankDetailService = async (userDetails: JwtPayload,payload: IBankDetail) => {
 //     // Service logic goes here
@@ -217,8 +230,8 @@ const changePasswordService = async (userDetails: IJwtPayload, payload: IChangeP
  * - Supports pagination
  */
 export const getUsersAroundMe = async (
-  userDetails: IJwtPayload, query: Record<string,unknown>
-  
+  userDetails: IJwtPayload, 
+  query: Record<string,unknown>
 ): Promise<NearbyUserResult[]> => {
 
     const {profileId} = userDetails;
@@ -267,8 +280,9 @@ export const getUsersAroundMe = async (
         _id: 1,
         name: 1,
         email: 1,
-        profilImage: 1,
+        profileImage: 1,
         images: 1,
+        location: 1,
         address: 1,
         children: 1,
         DOB: 1,
@@ -408,6 +422,7 @@ const UserServices = {
     updateUserProfile, 
     completeUserProfile,
     addLocationService,
+    getFriendProfileService,
     // addBankDetailService,
     changePasswordService ,
     getUsersAroundMe,

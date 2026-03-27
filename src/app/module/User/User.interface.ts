@@ -48,6 +48,7 @@ export interface NearbyUserResult {
   email: string,
   profileImage: string;
   images: string[];
+  location: object;
   address: string;
   children: Object[];
   DOB: Date;

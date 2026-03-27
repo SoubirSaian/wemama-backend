@@ -17,7 +17,7 @@ const conversationSchema = new Schema<IConversation>(
     },
     status: {
       type: String,
-      enum: ["Pending", "Accepted"],
+      enum: ["Pending", "Accepted","Rejected"],
       default: "Pending"
     }
   },
@@ -46,8 +46,8 @@ const messageSchema = new Schema<IMessage>(
       type: Boolean,
       default: false,
     },
-  },
-  { timestamps: true }
+    createdAt: {type: Date, default: Date.now}
+  }
 );
 
 //indexs

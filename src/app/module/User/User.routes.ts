@@ -59,6 +59,13 @@ userRouter.post("/add-location",
     UserController.addLocationController
 );
 
+userRouter.get("/get-friend-profile",
+    // auth(["Supplier","Customer"]),
+    // authorizeUser,
+    // validateRequest(UserValidations.addLocationValidation),
+    UserController.getFriendProfileController
+);
+
 userRouter.get("/match-user",
     // auth(["Supplier","Customer"]),
     authorizeUser,

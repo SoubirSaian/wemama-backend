@@ -13,4 +13,5 @@ export interface IMessage extends Document {
   receiver: Types.ObjectId;
   text: string;
   seen: boolean;
+  createdAt: Date;
 }

@@ -50,7 +50,7 @@ const expertupdateProfile = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
 
-    const result = await ExpertServices.updateExpertProfile();
+    const result = await ExpertServices.updateExpertProfile(user,req.file,req.body);
 
     sendResponse(res, {
         statusCode: 200,

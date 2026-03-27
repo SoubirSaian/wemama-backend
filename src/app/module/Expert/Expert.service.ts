@@ -221,7 +221,34 @@ const completeExpertProfile = async (
     return profile;
 }
 
-const updateExpertProfile = async () => {
+const updateExpertProfile = async (
+    userDetails: IJwtPayload,
+    file: Express.Multer.File | undefined,
+    payload: Partial <IExpert>
+) => {
+
+    const {profileId} = userDetails;
+    const {name,phone,country,city} = payload;
+
+    let expertImage;
+
+    if(file){
+        expertImage = `uploads/expert-image/${file.filename}`;
+    }
+
+    const profile = await ExpertModel.findByIdAndUpdate(profileId, {
+        name,
+        phone,
+        country,
+        city,
+        image: expertImage
+    })
+
+    if(!profile){
+        throw new ApiError(500,"Failed to update expert profile.");
+    }
+
+    return null;
 
 }
 

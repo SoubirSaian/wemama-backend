@@ -92,6 +92,20 @@ const addLocationController = catchAsync(async (req, res) => {
     });
 });
 
+const getFriendProfileController = catchAsync(async (req, res) => {
+
+    //  const { user } = req as AuthRequest;
+
+    const result = await UserServices.getFriendProfileService(req.query);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved friend profile.",
+        data: result,
+    });
+});
+
 const matchUserController = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
@@ -138,6 +152,7 @@ const UserController = {
     completeProfile,
     changePassword,
     addLocationController,
+    getFriendProfileController,
     matchUserController,
     dashboardGetUser,
     blockUser

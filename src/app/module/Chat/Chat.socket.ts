@@ -48,7 +48,8 @@ export const registerSocketHandlers = (socket: Socket) => {
   // GET CHAT LIST
   socket.on("get_chat_list", async (data) => {
 
-    const { userId } = data;
+    // const { userId } = data;
+    const userId = socket.data.user.profileId
 
     const chats = await ChatService.getChatList(userId);
 
@@ -68,13 +69,13 @@ export const registerSocketHandlers = (socket: Socket) => {
   });
 
   // SEARCH USER
-  socket.on("search_user", async (search) => {
+  // socket.on("search_user", async (search) => {
 
-    const users = await ChatService.searchUsers(search);
+  //   const users = await ChatService.searchUsers(search);
 
-    socket.emit("search_result", users);
+  //   socket.emit("search_result", users);
 
-  });
+  // });
 
   //send conversation request
   socket.on("send_conversation_request", async (data) => {
@@ -93,7 +94,9 @@ export const registerSocketHandlers = (socket: Socket) => {
 
   //get all conversation
   socket.on("get_conversation_requests", async () => {
+
     const userId = socket.data.user.profileId
+    
     const requests = await ChatService.getConversationRequests(userId);
 
     // console.log(requests);
@@ -109,6 +112,19 @@ export const registerSocketHandlers = (socket: Socket) => {
     const conversation = await ChatService.acceptConversationRequest(
       conversationId
     );
+
+  });
+
+  //accept request
+  socket.on("reject_conversation_request", async (data) => {
+
+    const { conversationId } = data;
+
+    const conversation = await ChatService.rejectConversationRequest(
+      conversationId
+    );
+
+    // console.log(conversation);
 
   });
 
