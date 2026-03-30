@@ -241,19 +241,20 @@ export const getUsersAroundMe = async (
     const profileObjId = new Types.ObjectId(profileId);
 
   // 1. Get excluded users (as ObjectIds from the beginning)
-  const excludedParticipantIds = await ConversationModel.distinct(
-    "participants",
-    { participants: profileObjId }
-  );
+  // const excludedParticipantIds = await ConversationModel.distinct(
+  //   "participants",
+  //   { participants: profileObjId }
+  // );
 
+  // let finalExcludedIds: string[];
   // Remove self & convert everything to ObjectId
-  const finalExcludedIds = excludedParticipantIds
-    .filter(id => !id.equals(profileObjId))
-    .map(id => new Types.ObjectId(id));
+  // const finalExcludedIds = excludedParticipantIds
+  //   .filter(id => !id.equals(profileObjId))
+  //   .map(id => new Types.ObjectId(id));
 
   // Add self explicitly (belt & suspenders)
-  finalExcludedIds.push(profileObjId);
-  console.log("Excluded IDs:", finalExcludedIds);
+  // finalExcludedIds.push(profileObjId);
+  // console.log("Excluded IDs:", finalExcludedIds);
   // 3. Aggregation pipeline with $geoNear (MUST be the first stage)
   const pipeline: PipelineStage[] = [
     {
@@ -266,7 +267,8 @@ export const getUsersAroundMe = async (
         maxDistance: radiusKm * 1000,
         spherical: true,
         query: {
-          _id: { $nin: finalExcludedIds }     // ← only one condition, very safe
+          // _id: { $nin: finalExcludedIds }     // ← only one condition, very safe
+          _id: { $ne: profileObjId }     // ← only one condition, very safe
         },
       },
     },
@@ -348,7 +350,6 @@ const checkMatchCount = async (userDetails: IJwtPayload) => {
   }
 
 }
-
 
 //dashboard
 

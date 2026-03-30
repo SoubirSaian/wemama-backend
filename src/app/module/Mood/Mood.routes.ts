@@ -27,6 +27,13 @@ MoodRouter.get("/get-all-mood-content",
     MoodController.getALLMoodContent
 );
 
+//maintain check in mood
+MoodRouter.post("/add-today-mood",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.maintainCheckinStreak
+);
+
 //dashboard
 
 MoodRouter.post("/add-mood-content",
@@ -52,6 +59,28 @@ MoodRouter.delete("/delete-mood-content/:id",
     // validateRequest(MoodValidations.addMoodContent),
     MoodController.deleteMoodContent
 );
+
+//Streak 
+
+MoodRouter.post("/add-streak-msg",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.addStreakMsg
+);
+
+MoodRouter.patch("/edit-streak-msg",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.editStreakMsg
+);
+
+MoodRouter.delete("/delete-streak-msg/:id",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.deleteStreakMsg
+);
+
+
 
 
 

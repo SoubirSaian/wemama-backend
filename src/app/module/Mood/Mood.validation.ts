@@ -18,9 +18,17 @@ const editMoodContent = z.object({
     }),
 });
 
+const addStreakMessageValidation = z.object({
+    body: z.object({
+        day: z.number().min(1, "Day is required"),
+        message: z.string().min(1, "Description is required"),
+    }),
+});
+
 const MoodValidations = { 
     addMoodContent,
-    editMoodContent
+    editMoodContent,
+    addStreakMessageValidation
  };
 
 export default MoodValidations;

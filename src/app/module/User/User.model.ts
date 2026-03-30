@@ -87,6 +87,14 @@ const UserSchema = new Schema<IUser>({
    matchCount: {
     type: Number,
     default: 0
+   },
+   streakCount: {
+    type: Number,
+    default: 0
+   },
+   lastCheckInDate:{
+    type: Date,
+    defaultL: null
    }
     
     

@@ -1,6 +1,10 @@
 import ApiError from "../../../error/ApiError";
-import { IMood, IMoodContent } from "./Mood.interface";
-import {MoodModel,MoodContentModel} from "./Mood.model";
+import dayjs from "dayjs";
+import { IMood, IMoodContent, IStreakMessage } from "./Mood.interface";
+import {MoodModel,MoodContentModel, CheckInModel, StreakMsgModel} from "./Mood.model";
+import UserModel from "../User/User.model";
+import { IJwtPayload } from "../../../interface/jwt.interface";
+
 
 const createMoodChipService = async (payload: IMood,file: Express.Multer.File | undefined) => {
 
@@ -42,6 +46,58 @@ const getALLModdContentService = async (query: Record<string,unknown>) => {
 
   return allMoodContent;
 }
+
+
+//check in streak maintain service
+const checkInStreakMaintainService = async (userDetails:IJwtPayload, payload:{mood: string}) => {
+  const {profileId} = userDetails;
+
+  const today = dayjs().startOf("day");
+  
+  const user = await UserModel.findById(profileId);
+
+  if (!user) throw new ApiError(404, "User not found");
+
+  const lastDate = user.lastCheckInDate
+    ? dayjs(user.lastCheckInDate).startOf("day")
+    : null;
+
+  // ❌ Already checked today
+  if (lastDate && lastDate.isSame(today)) {
+    throw new ApiError(400, "You already checked in today");
+  }
+
+  let newStreak = 1;
+
+  if (lastDate && lastDate.add(1, "day").isSame(today)) {
+    // ✅ Continuous streak
+    newStreak = user.streakCount + 1;
+  } else {
+    // ❌ Missed day → reset
+    newStreak = 1;
+  }
+
+  // Save check-in
+  // await CheckInModel.create({
+  //   user: profileId,
+  //   mood: payload.mood,
+  //   date: today.toDate(),
+  // });
+
+  // Update user
+  user.streakCount = newStreak;
+  user.lastCheckInDate = today.toDate();
+  await user.save();
+
+  // 🎯 Check milestone
+  const milestone = await StreakMsgModel.findOne({ day: newStreak });
+
+  return {
+    streak: newStreak,
+    milestoneReached: milestone ?  milestone?.day : "No milestone reached.",
+    message: milestone || "null"
+  };
+};
 
 //dashboard
 
@@ -106,16 +162,65 @@ const deleteMoodContentService = async (id: string) => {
     return mood;
 }
 
+//streak 
+
+const addStreakMessage = async (payload: IStreakMessage) => {
+
+  const newStreakMsg = await StreakMsgModel.create(payload);
+
+  if(!newStreakMsg){
+    throw new ApiError(500,"Failed to create new streak msg.");
+  }
+
+  return newStreakMsg;
+
+}
+
+const editStreakMessage = async (query: Record<string,unknown>,payload: IStreakMessage) => {
+
+  const {streakId} = query;
+
+  const editedStreakMsg = await StreakMsgModel.findByIdAndUpdate(
+    streakId,
+    {
+      day: payload.day,
+      message: payload.message
+    },{
+      new: true
+    }
+  );
+
+  if(!editedStreakMsg){
+    throw new ApiError(500,"Failed to update streak msg.");
+  }
+
+  return editedStreakMsg;
+
+}
+
+const deleteStreakMessage = async (id: string) => {
+
+  const deletedStreakMsg = await StreakMsgModel.findByIdAndDelete(id);
+
+  if(!deletedStreakMsg){
+    throw new ApiError(500,"Failed to delete streak msg.");
+  }
+}
+
 
 
 const MoodServices = { 
   createMoodChipService,
     getAllMoodChipService ,
     getALLModdContentService,
+    checkInStreakMaintainService,
     createMoodContentService,
     editMoodPhotoService,
     editMoodContentService,
-    deleteMoodContentService
+    deleteMoodContentService,
+    addStreakMessage,
+    editStreakMessage,
+    deleteStreakMessage
 };
 
 export default MoodServices;

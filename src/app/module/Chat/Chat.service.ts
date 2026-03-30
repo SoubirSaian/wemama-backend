@@ -8,6 +8,7 @@ import { ENUM_NOTIFICATION_TYPE } from "../../../utilities/enum";
 import { emitResult } from "../../../socket/emitResult";
 import sendResponse from "../../../utilities/sendResponse";
 import { IJwtPayload } from "../../../interface/jwt.interface";
+import { emitError } from "../../../socket/emitError";
 
 //send request
 // export const sendConversationRequest = async (
@@ -81,7 +82,7 @@ export const getConversationRequests = async (userId: string) => {
 
   const requests = await ConversationModel.find({
     participants: userId,
-    status: "Pending"
+    // status: "Pending"
   }).populate("participants", "name profileImage");
 
 
@@ -163,34 +164,62 @@ export const sendConversationRequest = async (
 //accept request
 export const acceptConversationRequest = async (conversationId: string) => {
 
-  const conversation = await ConversationModel.findByIdAndUpdate(
-    conversationId,
-    { status: "Accepted" },
-    { new: true }
-  );
+  if (!conversationId) {
+    throw new ApiError(400, "Conversation Id is required.");
+  }
 
   const io = getIO();
 
-  conversation?.participants.forEach((userId: string) => {
-    io.to(userId.toString()).emit("conversation_accepted", emitResult({
-        statusCode: 200,
-        success: true,
-        message: `You have accepted a new conversation request.`,
-        data: conversation,
-      }));
-  });
+  // const conversation = await ConversationModel.findByIdAndUpdate(
+  //   conversationId,
+  //   { status: "Accepted" },
+  //   { new: true }
+  // );
 
-  //send response to receiver
-  // io.to(conversation.participants[1]).emit("conversation_accepted", emitResult({
+  const conversation:any = await ConversationModel.findByIdAndUpdate(
+    conversationId,
+    { status: "Accepted" },
+    { new: true }
+  )
+  .populate("participants", "name profileImage")
+  .lean();
+
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found to reject.");
+  }
+
+
+  // conversation?.participants.forEach((userId: string) => {
+  //   io.to(userId.toString()).emit("conversation_accepted", emitResult({
   //       statusCode: 200,
   //       success: true,
   //       message: `You have accepted a new conversation request.`,
   //       data: conversation,
   //     }));
+  // });
+
+  // ✅ convert to string
+  const senderId = conversation.participants[0]._id.toString();
+  const receiverId = conversation.participants[1]._id.toString();
+
+  //send response to receiver
+  io.to(senderId).emit("conversation_accepted", emitResult({
+        statusCode: 200,
+        success: true,
+        message: `Your new conversation request accepted.`,
+        data: conversation,
+      }));
+
+  io.to(receiverId).emit("conversation_accepted", emitResult({
+        statusCode: 200,
+        success: true,
+        message: `You have accepted a new conversation request.`,
+        data: conversation,
+      }));
 
   //send a notification
   await notification.createNotification({
-      toId: conversation.participants[0] as string,
+      toId: senderId as string,
       toModel: "User",
       title: `User accepted your conversation request.`,
       type: ENUM_NOTIFICATION_TYPE.ACCEPT_WAVE,
@@ -210,7 +239,13 @@ export const rejectConversationRequest = async (conversationId: string) => {
 
   const io = getIO();
 
-  const conversation = await ConversationModel.findByIdAndDelete(conversationId);
+  // const conversation = await ConversationModel.findByIdAndDelete(conversationId);
+  
+  const conversation: any = await ConversationModel.findByIdAndUpdate(
+    conversationId,
+    { status: "Rejected" },
+    { new: true }
+  ).lean();
 
   if (!conversation) {
     throw new ApiError(404, "Conversation not found to reject.");
@@ -327,8 +362,20 @@ export const getMessages = async (conversationId: string) => {
         const messages = await MessageModel.find({
           conversationId,
         }).sort({ createdAt: 1 });
+
+        // const payloadForReceiver = emitResult({
+        //   statusCode: 200,
+        //   success: true,
+        //   message: `Retrieved all your chat.`,
+        //   data: messages,
+        // });
       
-        return messages;
+        return  emitResult({
+          statusCode: 200,
+          success: true,
+          message: `Retrieved all your chat.`,
+          data: messages,
+        });
     } catch (error) {
         console.log(error);
         console.log(500,"Error In get all message.");
@@ -340,6 +387,7 @@ export const getMessages = async (conversationId: string) => {
 export const sendMessage = async ( senderId: string,receiverId: string,text: string ) => {
 
     try {
+        const io = getIO();
         
         let conversation = await ConversationModel.findOne({
           participants: { $all: [senderId, receiverId] },
@@ -368,8 +416,6 @@ export const sendMessage = async ( senderId: string,receiverId: string,text: str
         conversation.lastMessage = message._id;
         await conversation.save();
       
-        const io = getIO();
-      
         //send message to both user
         io.to(receiverId).emit("new_message", emitResult({
           statusCode: 201,
@@ -380,16 +426,21 @@ export const sendMessage = async ( senderId: string,receiverId: string,text: str
         // io.to(senderId).emit("new_message", message);
       
         // update chat list
-        const senderChats = await getChatList(senderId);
-        const receiverChats = await getChatList(receiverId);
+        // const senderChats = await getChatList(senderId);
+        // const receiverChats = await getChatList(receiverId);
       
-        io.to(senderId).emit("chat_list", senderChats);
-        io.to(receiverId).emit("chat_list", receiverChats);
+        // io.to(senderId).emit("chat_list", senderChats);
+        // io.to(receiverId).emit("chat_list", receiverChats);
       
         return message;
     } catch (error) {
         console.log(error);
-        throw new ApiError(500,"Send new message error.");
+        // emitError(
+        //   socket,
+        //   error?.statusCode || 500,
+        //   error?.message || "Send message failed"
+        // );
+        // throw new ApiError(500,"Send new message error.");
     }
 
 };

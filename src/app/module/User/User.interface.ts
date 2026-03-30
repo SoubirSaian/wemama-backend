@@ -23,7 +23,9 @@ export interface IUser {
         subscribedAt: Date;
         expiredAt: Date;
     };
-    matchCount: number
+    matchCount: number;
+    streakCount: number;
+    lastCheckInDate: Date;
 }
 
 

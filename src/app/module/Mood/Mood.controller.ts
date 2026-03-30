@@ -1,3 +1,4 @@
+import { AuthRequest } from "../../../interface/authRequest";
 import catchAsync from "../../../utilities/catchasync";
 import sendResponse from "../../../utilities/sendResponse";
 import MoodServices from "./Mood.service";
@@ -35,6 +36,21 @@ const getALLMoodContent = catchAsync(async (req, res) => {
         statusCode: 200,
         success: true,
         message: "All mood content retrieved successfully.",
+        data: result,
+    });
+});
+
+//check in streak maintain controller
+const maintainCheckinStreak = catchAsync(async (req, res) => {
+
+    const {user} = req as AuthRequest;
+
+    const result = await MoodServices.checkInStreakMaintainService(user,req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Added today's check in.",
         data: result,
     });
 });
@@ -89,14 +105,56 @@ const deleteMoodContent = catchAsync(async (req, res) => {
     });
 });
 
+//Streak
+
+const addStreakMsg = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.addStreakMessage(req.body);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Added new streak message.",
+        data: result,
+    });
+});
+
+const editStreakMsg = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.editStreakMessage(req.query,req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Updated streak msg.",
+        data: result,
+    });
+});
+
+const deleteStreakMsg = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.deleteStreakMessage(req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Deleted streak msg.",
+        data: result,
+    });
+});
+
 const MoodController = { 
     createMoodChip,
     getAllMood,
     getALLMoodContent, 
+    maintainCheckinStreak,
     addMoodContent,
     addMoodImage,
     editMoodContent,
-    deleteMoodContent 
+    deleteMoodContent ,
+    addStreakMsg,
+    editStreakMsg,
+    deleteStreakMsg,
 };
 
 export default MoodController;

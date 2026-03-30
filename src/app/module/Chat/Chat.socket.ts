@@ -113,6 +113,8 @@ export const registerSocketHandlers = (socket: Socket) => {
       conversationId
     );
 
+    // console.log(conversation);
+
   });
 
   //accept request
@@ -124,7 +126,7 @@ export const registerSocketHandlers = (socket: Socket) => {
       conversationId
     );
 
-    // console.log(conversation);
+    console.log(conversation);
 
   });
 
