@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import UserModel from "../module/User/User.model";
 import ApiError from "../../error/ApiError";
 import { IJwtPayload } from "../../interface/jwt.interface";
+import { ExpertModel } from "../module/Expert/Expert.model";
+import { ENUM_USER_ROLE } from "../../utilities/enum";
 
 //middleware to check subscription plan
 export const checkSubscription = async (
@@ -11,7 +13,7 @@ export const checkSubscription = async (
 ) => {
   const { profileId } = req.user as IJwtPayload; // assuming auth middleware attaches user
 
-  const user = await UserModel.findById(profileId);
+  const user: any = await UserModel.findById(profileId).lean();
 
   if (!user) {
     throw new ApiError(404, "User not found to check subscription plan.");
@@ -24,6 +26,35 @@ export const checkSubscription = async (
 
   // 3️⃣ Limit reached
   throw new ApiError(403, "Please buy subscription plan to unlock everything.");
+};
+
+//middleware to check expert is verified or not
+export const checkVerifiedExpert = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { profileId } = req.user as IJwtPayload; // assuming auth middleware attaches user
+
+  const expert: any = await ExpertModel.findById(profileId)
+    .populate({path:"auth",select:"role"})
+      .lean();
+
+  if (!expert) {
+    throw new ApiError(404, "Expert not found to check verification.");
+  }
+
+  if (expert.auth.role !== ENUM_USER_ROLE.EXPART) {
+    throw new ApiError(400, "Please Sign up as an Expert to start this operation.");
+  }
+
+  // 1️⃣ If user has subscription
+  if (expert?.isApproved) {
+    return next();
+  }
+
+  // 3️⃣ Limit reached
+  throw new ApiError(403, "Please ask admin to approve your expert account. Without Admin's approval you can not add a new session.");
 };
 
 //middleware to check matching count

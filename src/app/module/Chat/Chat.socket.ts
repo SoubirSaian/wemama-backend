@@ -60,9 +60,10 @@ export const registerSocketHandlers = (socket: Socket) => {
   // GET MESSAGES
   socket.on("get_messages", async (data) => {
 
+    const userId = socket.data.user.profileId
     const { conversationId } = data;
 
-    const messages = await ChatService.getMessages(conversationId);
+    const messages = await ChatService.getMessages(conversationId,userId);
 
     socket.emit("messages", messages);
 

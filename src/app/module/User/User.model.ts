@@ -6,6 +6,7 @@ import config from "../../../config";
 
 const UserSchema = new Schema<IUser>({
     auth: { type: Schema.Types.ObjectId, ref: "Auth" },
+    agoraUid:{ type: Number, default: null},
     name: {
         type: String,
         default: ''

@@ -33,6 +33,12 @@ export default {
     paystack_webhook_secret: process.env.PAYSTACK_SECRET_KEY,
     
   },
+  agora: {
+    agora_app_id: process.env.AGORA_APP_ID,
+    agora_app_certificate: process.env.AGORA_APP_CERTIFICATE,
+    agora_customer_id: process.env.AGORA_CUSTOMER_ID,
+    agora_customer_certificate: process.env.AGORA_CUSTOMER_CERTIFICATE
+  },
 
 // aws: {
 //     access_key_id: process.env.AWS_ACCESS_KEY_ID,

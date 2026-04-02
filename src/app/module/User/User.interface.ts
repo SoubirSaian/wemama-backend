@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 
 export interface IUser {
     auth: Types.ObjectId;
+    agoraUid: number;
     name: string;
     email: string;
     phone: string;

@@ -1,6 +1,7 @@
 import { AuthRequest } from "../../../interface/authRequest";
 import catchAsync from "../../../utilities/catchasync";
 import sendResponse from "../../../utilities/sendResponse";
+import AgoraServices from "./Agora.service";
 import ExpertServices from "./Expert.service";
 
 const expertRegistration = catchAsync(async (req, res) => {
@@ -36,7 +37,11 @@ const expertCompleteProfile = catchAsync(async (req, res) => {
         licenseProof?: Express.Multer.File[];
     };
 
-    const result = await ExpertServices.completeExpertProfile(user,files,req.body);
+    const result = await ExpertServices.completeExpertProfile(
+        user,
+        files,
+        req.body
+    );
 
     sendResponse(res, {
         statusCode: 200,
@@ -117,6 +122,52 @@ const getTodaySession = catchAsync(async (req, res) => {
         data: result,
     });
 });
+
+
+//agora
+
+const startAgoraLiveSession = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await AgoraServices.startLiveSession(user,req.params.sessionId);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "You have started a new live session.",
+        data: result,
+    });
+});
+
+const joinAgoraLiveSession = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await AgoraServices.joinLiveSession(user,req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "You have joined a new live session.",
+        data: result,
+    });
+});
+
+const endAgoraLiveSession = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await AgoraServices.FinishLiveSession(user,req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "You have ended the live session.",
+        data: result,
+    });
+});
+
 
 // dashnoard
 
@@ -262,6 +313,9 @@ const ExpertController = {
     createNewSession,
     getMySession,
     getTodaySession,
+    startAgoraLiveSession,
+    joinAgoraLiveSession,
+    endAgoraLiveSession,
     getAllSession,
     getAllSessionRequest,
     approveSession,

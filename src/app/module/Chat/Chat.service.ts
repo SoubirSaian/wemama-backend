@@ -356,12 +356,25 @@ export const getChatList = async (userId: string) => {
 };
 
 //get all message from user
-export const getMessages = async (conversationId: string) => {
+export const getMessages = async (conversationId: string,currentUserId: string) => {
 
     try {   
         const messages = await MessageModel.find({
           conversationId,
-        }).sort({ createdAt: 1 });
+        }).sort({ createdAt: 1 }).lean();
+
+        // 2️⃣ get conversation with participants
+        const conversation:any = await ConversationModel.findById(conversationId)
+          .populate("participants", "name profileImage").lean();
+
+        if (!conversation) {
+          throw new Error("Conversation not found to get receiver name and image.");
+        }
+
+        // 3️⃣ find the OTHER user (receiver)
+        const receiver = conversation.participants.find(
+          (user: any) => user._id.toString() !== currentUserId
+        );
 
         // const payloadForReceiver = emitResult({
         //   statusCode: 200,
@@ -374,7 +387,7 @@ export const getMessages = async (conversationId: string) => {
           statusCode: 200,
           success: true,
           message: `Retrieved all your chat.`,
-          data: messages,
+          data: {receiver,messages},
         });
     } catch (error) {
         console.log(error);
@@ -418,12 +431,22 @@ export const sendMessage = async ( senderId: string,receiverId: string,text: str
       
         //send message to both user
         io.to(receiverId).emit("new_message", emitResult({
-          statusCode: 201,
+          statusCode: 200,
           success: true,
           message: `You have received a new message.`,
           data: message,
         }));
         // io.to(senderId).emit("new_message", message);
+
+        //send a notification
+        await notification.createNotification({
+            toId: receiverId as string,
+            toModel: "User",
+            title: `You have received a new message.`,
+            type: ENUM_NOTIFICATION_TYPE.SENT_MESSAGE,
+            referenceId: conversation?._id,
+            referenceModel: "Conversation"
+        });
       
         // update chat list
         // const senderChats = await getChatList(senderId);

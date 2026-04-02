@@ -39,10 +39,10 @@ import { multerS3Storage } from "../../helper/multerS3";
    fileFilter: (req, file, cb) => {
     
       const allowedMimeTypes = [
-       "image/png",
-       "image/jpg",
-       "image/jpeg",
-       "file/pdf",
+        "image/png",
+        "image/jpg",
+        "image/jpeg",
+        "application/pdf", // ✅ FIXED
       ];
     
        if (allowedMimeTypes.includes(file.mimetype)) {

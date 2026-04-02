@@ -4,7 +4,7 @@ import MoodRouter from "../module/Mood/Mood.routes";
 import CommunityRouter from "../module/Community/Community.routes";
 import userRouter from "../module/User/User.routes";
 import settingsRouter from "../module/Settings/Settings.routes";
-import ExpertRouter from "../module/Expert/Expert.routes";
+import ExpertRouter, { AgoraRouter } from "../module/Expert/Expert.routes";
 import ChatRouter from "../module/Chat/Chat.routes";
 
 const allRouter = Router();
@@ -30,6 +30,10 @@ const moduleRoutes = [
     {
         path: '/expert',
         router: ExpertRouter,
+    },
+    {
+        path: '/agora',
+        router: AgoraRouter,
     },
     {
         path: '/settings',

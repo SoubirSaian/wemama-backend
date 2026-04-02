@@ -195,18 +195,41 @@ const completeExpertProfile = async (
 
     const { authId, email, profileId } = userDetails;
 
+    // let updateData: any = { ...payload };
+    // console.log("Files",files);
+
+    // //handle expert signature
+    // if (files?.signature?.length) {
+    //         updateData.signature = `uploads/expert-file/${files.signature[0].filename}`;
+    // }
+
+    // //handle expert license proof
+    // if (files?.licenseProof?.length) {
+    //         updateData.license.proof = `uploads/expert-file/${files.licenseProof[0].filename}`;
+    // }
+
+    // console.log("Update payload:",updateData);
+
+    // const profile = await ExpertModel.findByIdAndUpdate(
+    //     profileId,
+    //     updateData,
+    //     { new: true }
+    // );
+
     let updateData: any = { ...payload };
 
-
-    //handle expert signature
+    // signature
     if (files?.signature?.length) {
-            updateData.signature = `uploads/expert-file/${files.signature[0].filename}`;
+        updateData.signature = `uploads/expert-file/${files.signature[0].filename}`;
     }
 
-    //handle expert license proof
+    // license proof (SAFE + Mongo friendly)
     if (files?.licenseProof?.length) {
-            updateData.license.proof = `uploads/expert-file/${files.licenseProof[0].filename}`;
+        updateData["license.proof"] = `uploads/expert-file/${files.licenseProof[0].filename}`;
     }
+
+    console.log("files:", files);
+    console.log("update body:", updateData);
 
     const profile = await ExpertModel.findByIdAndUpdate(
         profileId,
@@ -228,8 +251,9 @@ const updateExpertProfile = async (
 ) => {
 
     const {profileId} = userDetails;
-    const {name,phone,country,city} = payload;
-
+    const {name,phone} = payload;
+    // console.log(payload);
+    // console.log(userDetails);
     let expertImage;
 
     if(file){
@@ -239,10 +263,10 @@ const updateExpertProfile = async (
     const profile = await ExpertModel.findByIdAndUpdate(profileId, {
         name,
         phone,
-        country,
-        city,
         image: expertImage
-    })
+    },{new:true});
+
+    // console.log("Profile : ",profile);
 
     if(!profile){
         throw new ApiError(500,"Failed to update expert profile.");
@@ -267,6 +291,9 @@ const getExpertProfile = async (userDetails: IJwtPayload) => {
 //session Website
 const createNewSession = async (userDetails: IJwtPayload,payload: Partial<ISession>) => {
     const {profileId} = userDetails;
+
+    //if expert not verified then he will not be able to create new session
+
     const { date, time, title, description, status} = payload;
 
     const newSession = await SessionModel.create({
@@ -321,38 +348,6 @@ const getTodaySessions = async (userDetails: IJwtPayload) => {
     return sessions;
 }
 
-//start live session
-const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
-    const {profileId} = userDetails;
-
-    const session = await SessionModel.findById(id);
-
-    //change session status
-    session.status = ENUM_SESSION_STATUS.ONGOING;
-
-    await session.save();
-
-    return session;
-}
-
-//finish live session
-const FinishLiveSession = async (userDetails: IJwtPayload,id: string) => {
-    const {profileId} = userDetails;
-
-    const session = await SessionModel.findById(id);
-
-    //change session status
-    session.status = ENUM_SESSION_STATUS.COMPLETED;
-
-    await session.save();
-
-    return session;
-}
-
-//create session report
-const createSessionReport = async () => {
-    
-}
 
 const getSessionReport = async () => {
 

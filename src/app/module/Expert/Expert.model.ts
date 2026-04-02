@@ -4,6 +4,8 @@ import { ENUM_SESSION_STATUS } from "../../../utilities/enum";
 
 const ExpertSchema = new Schema<IExpert>({
     auth: { type: Schema.Types.ObjectId, ref: "Auth"},
+
+    agoraUid: { type: Number, default: null },
     name: { type: String, default: "" },
     phone: { type: String , default: ""},
     email: { type: String, required: true, unique: true },
@@ -14,7 +16,7 @@ const ExpertSchema = new Schema<IExpert>({
     date: { type: Date, default: Date.now },
     profession: {
         title: { type: String, default: "" },
-        designation: { type: String, default: "" },
+        designation: [{ type: String, default: "" }],
         experience: { type: Number, default: "" },
     },
     license:{
@@ -24,11 +26,11 @@ const ExpertSchema = new Schema<IExpert>({
     },
     session : {
         topic: { type: String, default: "" },
-        format: { type: String, default: "" },
+        format: [{ type: String, default: "" }],
         length: { type: String, default: "" }
     },
     availability: {
-        day: { type: String, default: "" },
+        days: [{ type: String, default: "" }],
         timezone: { type: String, default: "" }
     },
     isApproved: {type: Boolean, default: false}
@@ -51,8 +53,23 @@ const SessionSchema = new Schema<ISession>({
     time: { type: String, required: true },
     date: { type: Date, required: true },
     channelName: { type: String, default: '' },
-    recordingUrl: { type: String, default: ''},
-    isApproved: {type: Boolean, default: false}
+    
+    doctorUid: { type: Number, default: null},
+    recordingUid: { type: Number, default: null},
+    resourceId: { type: String, default: ''},
+    sid: { type: String, default: ''},
+    
+    recordingMp4Url: { type: String, default: ''},
+    recordingHlsUrl: { type: String, default: ''},
+    recordingFiles: [{ 
+        filename :{ type: String, default: ''},
+        url :{ type: String, default: ''},
+        type :{ type: String, default: ''},
+    }],
+    duration: { type: Number, default: null}, //in seconds
+    startedAt: { type: Date, default: null },
+    finishedAt: { type: Date, default: null },
+    isApproved: {type: Boolean, default: false},
 }, { timestamps: true });
 
 

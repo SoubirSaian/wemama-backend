@@ -3,6 +3,7 @@ import { number } from "zod";
 
 export interface IExpert {
   auth: Types.ObjectId;
+  agoraUid: number;
   name: string;
   phone: string;
   email: string;
@@ -12,7 +13,7 @@ export interface IExpert {
   signature: string;
   date: Date;
   profession: {
-    designation: string,
+    designation: string[],
     title: string,
     experience: number,
   };
@@ -23,11 +24,11 @@ export interface IExpert {
   };
   session : {
       topic: string,
-      format: string,
+      format: string[],
       length: string,
   };
   availability: {
-      day: string,
+      days: string[],
       timezone: string
   };
   isApproved: boolean;
@@ -41,7 +42,25 @@ export interface ISession{
   time: string;
   date: Date;
   channelName: string;
-  recordingUrl: string;
+  
+  // Recording fields
+  doctorUid: number,
+  recordingUid: number,
+  resourceId: string,
+  sid: string,
+  
+  // Final recording files (filled after stop)
+  recordingMp4Url: string,      // Direct MP4 for easy playback
+  recordingHlsUrl: string,      // HLS (m3u8) for adaptive streaming
+  recordingFiles?: [{            // Full file list from Agora (optional)
+    fileName: string,
+    url: string,
+    type: string // "mp4" or "hls"
+  }],
+  
+  duration: number,
+  startedAt: Date;
+  finishedAt: Date;
   isApproved: boolean;
 }
 

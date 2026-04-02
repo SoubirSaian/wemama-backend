@@ -7,7 +7,29 @@ import { uploadExpertFile, uploadProfile } from "../../middlewares/multerMiddlew
 
 
 const ExpertRouter = express.Router();
+export const AgoraRouter = express.Router();
 
+//agora
+AgoraRouter.post("/start-live",
+    authorizeUser,
+    // validateRequest(ExpertValidations.expertRegistrationValidation),
+    ExpertController.startAgoraLiveSession
+);
+
+AgoraRouter.get("/join-live",
+    authorizeUser,
+    // validateRequest(ExpertValidations.expertRegistrationValidation),
+    ExpertController.joinAgoraLiveSession
+);
+
+AgoraRouter.post("/end-live",
+    authorizeUser,
+    // validateRequest(ExpertValidations.expertRegistrationValidation),
+    ExpertController.endAgoraLiveSession
+);
+
+
+//expert
 ExpertRouter.post("/expert-register",
 
     validateRequest(ExpertValidations.expertRegistrationValidation),
@@ -26,11 +48,11 @@ ExpertRouter.post("/expert-complete-profile",
         { name: "signature", maxCount: 1 },
         { name: "licenseProof", maxCount: 1 },
     ]),
-    validateRequest(ExpertValidations.expertValidationSchema),
+    // validateRequest(ExpertValidations.expertValidationSchema),
     ExpertController.expertCompleteProfile
 );
 
-ExpertRouter.post("/update-expert-profile",
+ExpertRouter.patch("/update-expert-profile",
     authorizeUser,
     uploadProfile.single("expert-image"),
     // validateRequest(ExpertValidations.expertValidationSchema),
@@ -116,3 +138,4 @@ ExpertRouter.get("/block-expert/:id",
 
 
 export default ExpertRouter;
+// export AgoraRouter;

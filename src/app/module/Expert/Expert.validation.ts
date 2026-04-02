@@ -1,3 +1,4 @@
+import { Certificate } from "crypto";
 import { z } from "zod";
 import { da } from "zod/v4/locales";
 
@@ -36,32 +37,32 @@ export const expertValidationSchema = z.object({
       
         phone: z.string().min(5, "Phone number is required"),
       
-        email: z.string().email("Invalid email address"),
+        // email: z.string().email("Invalid email address"),
       
         country: z.string().min(1, "Country is required"),
       
         city: z.string().min(1, "City is required"),
       
         profession: z.object({
-          designation: z.string().min(1, "Designation is required"),
+          designation: z.array( z.string().min(1, "Designation is required") ),
           title: z.string().min(1, "Title is required"),
           experience: z.number().min(0, "Experience cannot be negative"),
         }),
       
         license: z.object({
           qualification: z.string().min(1, "Qualification is required"),
-          number: z.string().min(1, "License number is required"),
-          proof: z.string().min(1, "License proof is required"),
+          certificate: z.string().min(1, "License number is required"),
+          proof: z.string().optional(),
         }),
       
         session: z.object({
           topic: z.string().min(1, "Session topic is required"),
-          format: z.string().min(1, "Session format is required"),
+          format: z.array( z.string().min(1, "1 Session format is required") ),
           length: z.string().min(1, "Session length is required"),
         }),
       
         availability: z.object({
-          day: z.string().min(1, "Available day is required"),
+          days: z.array( z.string().min(1, "Available day is required") ),
           time: z.string().min(1, "Available time is required"),
         }),
     })
