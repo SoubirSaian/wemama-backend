@@ -6,24 +6,24 @@ import ExpertServices from "./Expert.service";
 
 const expertRegistration = catchAsync(async (req, res) => {
 
-    const result = await ExpertServices.expertRegisterationService(req.body);
+    const result:any = await ExpertServices.expertRegisterationService(req.body);
 
     sendResponse(res, {
-        statusCode: 201,
+        statusCode: result?.statusCode || 201,
         success: true,
-        message: "Expert registered successfully. Check your email for OTP.",
+        message: result?.msg,
         data: result,
     });
 });
 
 const expertLogin = catchAsync(async (req, res) => {
 
-    const result = await ExpertServices.expertLoginService(req.body);
+    const result:any = await ExpertServices.expertLoginService(req.body);
 
     sendResponse(res, {
-        statusCode: 200,
+        statusCode: result.statusCode,
         success: true,
-        message: "Expert logged in successfully",
+        message: result.msg,
         data: result,
     });
 });
@@ -95,6 +95,35 @@ const createNewSession = catchAsync(async (req, res) => {
     });
 });
 
+const editSession = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await ExpertServices.editSession(user,req.params.id,req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Session edited.",
+        data: result,
+    });
+});
+
+const deleteSessionWeb = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await ExpertServices.deleteSessionWebsite(user,req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Session deleted.",
+        data: result,
+    });
+});
+
+
 const getMySession = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
@@ -119,6 +148,21 @@ const getTodaySession = catchAsync(async (req, res) => {
         statusCode: 200,
         success: true,
         message: "Retrieved all today sessions.",
+        data: result,
+    });
+});
+
+//app
+const getAllSessionApp = catchAsync(async (req, res) => {
+
+    //  const { user } = req as AuthRequest;
+
+    const result = await ExpertServices.getALLExpertSessionsApp(req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all sessions.",
         data: result,
     });
 });
@@ -302,6 +346,64 @@ const blockExpert = catchAsync(async (req, res) => {
     });
 });
 
+//pre asked question
+
+const addPreAskedQuestion = catchAsync(async (req, res) => {
+
+    const {user} = req as AuthRequest;
+
+    const result = await ExpertServices.preAskedQuestion(user,req.body);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Question added.",
+        data: result,
+    });
+});
+
+const getAllUpComingOngoingSession = catchAsync(async (req, res) => {
+
+    const {user} = req as AuthRequest;
+
+    const result = await ExpertServices.getAllUpcomingAndOngoingSession(user);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all upcoming and ongoing session.",
+        data: result,
+    });
+});
+
+const getAllPreAskedQuestion = catchAsync(async (req, res) => {
+
+    // const {user} = req as AuthRequest;
+
+    const result = await ExpertServices.getAllquestionBySession(req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all sesion question.",
+        data: result,
+    });
+});
+
+const markQuestionAsAnswered = catchAsync(async (req, res) => {
+
+    // const {user} = req as AuthRequest;
+
+    const result = await ExpertServices.markedQuestionAsAnswerd(req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Question marked.",
+        data: result,
+    });
+});
+
 
 
 const ExpertController = { 
@@ -311,8 +413,11 @@ const ExpertController = {
     expertupdateProfile,
     getExpertprofile,
     createNewSession,
+    editSession,
+    deleteSessionWeb,
     getMySession,
     getTodaySession,
+    getAllSessionApp,
     startAgoraLiveSession,
     joinAgoraLiveSession,
     endAgoraLiveSession,
@@ -325,7 +430,12 @@ const ExpertController = {
     getSingleExpert,
     deleteExpert,
     approveExpert,
-    blockExpert
+    blockExpert,
+
+    addPreAskedQuestion,
+    getAllUpComingOngoingSession,
+    getAllPreAskedQuestion,
+    markQuestionAsAnswered
  };
 
 export default ExpertController;

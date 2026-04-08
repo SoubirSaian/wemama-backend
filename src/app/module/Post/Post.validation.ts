@@ -14,7 +14,7 @@ const createPostValidation = z.object({
 
 const giveLikeValidation = z.object({
     body: z.object({
-      
+        community: z.string().min(24,"Community id is required."),
         post: z.string().min(24,"Post id is requered."),
         name: z.string().min(1,"Commentator name is requered."),  
     }),
@@ -22,8 +22,9 @@ const giveLikeValidation = z.object({
 
 const makeCommentValidation = z.object({
     body: z.object({
+        community: z.string().min(24,"Community id is requered."),
         post: z.string().min(24,"Post id is requered."),
-        comment: z.string().min(24,"Comment id is requered.").optional(),
+        parentComment: z.string().min(24,"Comment id is requered.").optional(),
         content: z.string().min(1,"Content is requered."),  
         name: z.string().min(1,"commentator name is requered."),  
     }),

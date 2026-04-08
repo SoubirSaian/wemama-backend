@@ -6,6 +6,7 @@ import userRouter from "../module/User/User.routes";
 import settingsRouter from "../module/Settings/Settings.routes";
 import ExpertRouter, { AgoraRouter } from "../module/Expert/Expert.routes";
 import ChatRouter from "../module/Chat/Chat.routes";
+import postRouter from "../module/Post/Post.routes";
 
 const allRouter = Router();
 
@@ -26,6 +27,10 @@ const moduleRoutes = [
     {
         path: '/community',
         router: CommunityRouter,
+    },
+    {
+        path: '/post',
+        router: postRouter,
     },
     {
         path: '/expert',

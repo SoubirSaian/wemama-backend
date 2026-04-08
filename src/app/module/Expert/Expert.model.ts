@@ -1,5 +1,5 @@
 import { model, Schema, models } from "mongoose";
-import { IExpert, ISession } from "./Expert.interface";
+import { IExpert, IQuestion, ISession } from "./Expert.interface";
 import { ENUM_SESSION_STATUS } from "../../../utilities/enum";
 
 const ExpertSchema = new Schema<IExpert>({
@@ -73,10 +73,33 @@ const SessionSchema = new Schema<ISession>({
 }, { timestamps: true });
 
 
+const QuestionSchema = new Schema<IQuestion>({
+    expert: {
+        type: Schema.Types.ObjectId,
+        ref: "Expert",
+        required: [true,"Expert id is required."]
+    },
+    session: {
+        type: Schema.Types.ObjectId,
+        ref: "Session",
+        required: [true,"Session id is required."]
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: [true,"User id is required."]
+    },
+    question: { type: String, required: true },
+    isAnswerd: {type: Boolean, default: false},
+    createdAt: { type: Date, default: Date.now }
+});
+
+
 
 
 const ExpertModel = models.Expert || model<IExpert>("Expert", ExpertSchema);
 const SessionModel = models.Session || model<ISession>("Session", SessionSchema);
+const QuestionModel = models.Question || model<IQuestion>("Question", QuestionSchema);
 
-export { ExpertModel, SessionModel };
+export { ExpertModel, SessionModel,QuestionModel };
 

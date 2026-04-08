@@ -34,7 +34,7 @@ const updateUserProfile = async (
   const { profileId } = userDetails;
 
   const { name, DOB, state, city, bio, children, currentImages } = payload as any;
-  // console.log(profileImage);
+  console.log("Profile image:",profileImage);
   // console.log(descriptionImages);
   const profile = await UserModel.findById(profileId);
 
@@ -55,7 +55,8 @@ const updateUserProfile = async (
   // console.log("removedImages:", removedImages);
   //update profile image
   if (profileImage) {
-      newProfileImage = `uploads/profile-image/${profileImage?.filename}`;   
+      newProfileImage = `uploads/profile-image/${profileImage[0]?.filename}`;  
+      console.log("new profile image:",newProfileImage); 
       //delete old image
       deleteOldFile(profile.profileImage);
   }

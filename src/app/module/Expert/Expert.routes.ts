@@ -10,7 +10,7 @@ const ExpertRouter = express.Router();
 export const AgoraRouter = express.Router();
 
 //agora
-AgoraRouter.post("/start-live",
+AgoraRouter.post("/start-live/:sessionId",
     authorizeUser,
     // validateRequest(ExpertValidations.expertRegistrationValidation),
     ExpertController.startAgoraLiveSession
@@ -59,7 +59,7 @@ ExpertRouter.patch("/update-expert-profile",
     ExpertController.expertupdateProfile
 );
 
-ExpertRouter.get("/get-expert-profile",
+ExpertRouter.get("/expert-get-profile",
     authorizeUser,
     ExpertController.getExpertprofile
 );
@@ -71,6 +71,16 @@ ExpertRouter.post("/create-new-session",
     ExpertController.createNewSession
 );
 
+ExpertRouter.patch("/edit-session/:id",
+    authorizeUser,
+    ExpertController.editSession
+);
+
+ExpertRouter.delete("/delete-session-web/:id",
+    authorizeUser,
+    ExpertController.deleteSessionWeb
+);
+
 ExpertRouter.get("/get-my-session",
     authorizeUser,
     ExpertController.getMySession
@@ -79,6 +89,13 @@ ExpertRouter.get("/get-my-session",
 ExpertRouter.get("/get-today-session",
     authorizeUser,
     ExpertController.getTodaySession
+);
+
+//app
+
+ExpertRouter.get("/get-all-session-app",
+    // authorizeUser,
+    ExpertController.getAllSessionApp
 );
 
 //dashboard
@@ -135,7 +152,26 @@ ExpertRouter.get("/block-expert/:id",
     ExpertController.blockExpert
 );
 
+//pre asked question
+ExpertRouter.post("/add-new-question",
+    authorizeUser,
+    ExpertController.addPreAskedQuestion
+);
 
+ExpertRouter.get("/get-all-session-question",
+    authorizeUser,
+    ExpertController.getAllUpComingOngoingSession
+);
+
+ExpertRouter.get("/get-all-question/:id",
+    // authorizeUser,
+    ExpertController.getAllPreAskedQuestion
+);
+
+ExpertRouter.post("/mark-question/:id",
+    // authorizeUser,
+    ExpertController.markQuestionAsAnswered
+);
 
 export default ExpertRouter;
 // export AgoraRouter;

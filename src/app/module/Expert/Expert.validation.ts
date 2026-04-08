@@ -88,13 +88,23 @@ export const sessionValidationSchema = z.object({
     })
 });
 
+const questionValidationSchema = z.object({
+    body: z.object({
+        expert: z.string().min(24, "Expert id is required"),
+        session: z.string().min(24, "Session id is required"),
+        question: z.string().min(1, "Valid question is required"),
+      
+    })
+});
+
 
 
 const ExpertValidations = { 
     expertRegistrationValidation,
     expertLoginValidationSchema,
     expertValidationSchema,
-    sessionValidationSchema
+    sessionValidationSchema,
+    questionValidationSchema
  };
 
 export default ExpertValidations;

@@ -24,8 +24,13 @@ const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
       if (!expert) {
           throw new ApiError(404,"Expert not found to start  a new live session.");
       }
-  
-      const channelName = `live_${expert?.name}_${profileId}_${Date.now()}`; // unique per stream
+
+      const safeName = expert?.name?.trim()
+          .replace(/\s+/g, "_")       // spaces → _
+            .replace(/[^a-zA-Z0-9_]/g, ""); // remove special chars
+
+      const channelName = `live_${safeName}_${profileId}_${Date.now()}`;
+      //const channelName = `live_${expert?.name}_${profileId}_${Date.now()}`; // unique per stream
   
       // Save to MongoDB
       // await LiveStream.create({
@@ -107,6 +112,8 @@ const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
       //   },
       //   message: 'Live stream started with recording'
       // });
+
+      console.log(channelName,token,uid);
   
       return {
           channelName, 

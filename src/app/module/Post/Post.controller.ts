@@ -7,83 +7,109 @@ const createPost = catchAsync(async (req, res) => {
 
     const {user} = req as AuthRequest;
 
-    let files: Express.Multer.File[] | undefined;
-
-    if (Array.isArray(req.files)) {
-        // upload.array()
-        files = req.files;
-  } else if (req.files && typeof req.files === "object") {
-        // upload.fields()
-        files = Object.values(req.files).flat();
-  }
-
-    const result = await PostServices.createPostService(user,files ,req.body);
+    const result = await PostServices.createPostService(user,req.body);
     
     sendResponse(res, {
-        statusCode: 200,
+        statusCode: 201,
         success: true,
         message: "New post created successfully",
         data: result,
     });
 });
 
-const getAllPost = catchAsync(async (req, res) => {
+const toggleLike = catchAsync(async (req, res) => {
 
     const {user} = req as AuthRequest;
 
-    const result = await PostServices.getAllPostService(user,req.query);
+    const result:any = await PostServices.toggleLikeService(user,req.body);
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Retrieved all my post successfully",
+        message: result?.message,
         data: result,
     });
 });
 
-const getNearbyPost = catchAsync(async (req, res) => {
+const makeComment = catchAsync(async (req, res) => {
 
     const {user} = req as AuthRequest;
 
-    const result = await PostServices.getNearbyPostsService(user,req.query);
+    const result = await PostServices.makeComment(user,req.body);
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Retrieved all available post near me successfully",
+        message: "You have added a comment.",
         data: result,
     });
 });
 
-const getPostDetail = catchAsync(async (req, res) => {
+const getALLComment = catchAsync(async (req, res) => {
 
     // const {user} = req as AuthRequest;
 
-    const result = await PostServices.getPostDetailService(req.params.id);
+    const result = await PostServices.getAllCommentService(req.params.id);
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Retrieved all available post near me successfully",
+        message: "Retrieved all  comment.",
         data: result,
     });
 });
 
-const acceptPostRequest = catchAsync(async (req, res) => {
+//manage post
+
+const pinPost = catchAsync(async (req, res) => {
 
     const {user} = req as AuthRequest;
 
-    const result = await PostServices.acceptPostService(user,req.body);
+    const result = await PostServices.pinPostService(user,req.params.id);
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Post request accepted successfully",
+        message: "Post pinned.",
+        data: result,
+    });
+});
+
+const lockComment = catchAsync(async (req, res) => {
+
+    const {user} = req as AuthRequest;
+
+    const result = await PostServices.lockCommentService(user,req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Comment locked.",
+        data: result,
+    });
+});
+
+const deletePost = catchAsync(async (req, res) => {
+
+    const {user} = req as AuthRequest;
+
+    const result = await PostServices.deletePostService(user,req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Post deleted.",
         data: result,
     });
 });
 
 const PostController = { 
-    createPost, getAllPost, getNearbyPost,getPostDetail, acceptPostRequest
+    createPost,
+    toggleLike,
+    makeComment,
+    getALLComment,
+    pinPost,
+    lockComment,
+    deletePost
  };
 export default PostController;

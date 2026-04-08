@@ -4,8 +4,11 @@ export interface IPost {
   creator: Types.ObjectId;
   community: Types.ObjectId;
   content: string;
+  totalLike: number;
+  totalComment: number
   isAnonymous: boolean;
-
+  isPinned: boolean;
+  isCommentLocked: boolean;
 }
 
 export interface ILike {
@@ -18,15 +21,17 @@ export interface ILike {
 export interface IComment {
   creator: Types.ObjectId;
   name : string;
-  comment?: Types.ObjectId;
+  parentComment: Types.ObjectId;
   content: string;
   post: Types.ObjectId;
   createdAt: Date;
 }
 
-export interface INearbyPostParams {
-  // userId: string;
-  latitude: number;
-  longitude: number;
-  radiusKm: number; // 30 or 50
+
+export type TCommentPayload  = {
+  community: Types.ObjectId;
+  post: Types.ObjectId;
+  parentComment: Types.ObjectId;
+  content: string;
+  name : string;
 }

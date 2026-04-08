@@ -64,11 +64,13 @@ export interface ISession{
   isApproved: boolean;
 }
 
-export interface ISessionReport{
+export interface IQuestion{
+  expert: Types.ObjectId;
   session: Types.ObjectId;
-  name : string;
-  email: string;
-  content: string;
+  user: Types.ObjectId;
+  question : string;
+  isAnswerd: boolean;
+  createdAt: Date;
 }
 
 export interface IExpertCredintial {

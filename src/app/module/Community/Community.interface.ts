@@ -1,10 +1,11 @@
 import { Types } from "mongoose";
 
 export interface ICommunity {
-  creator: Types.ObjectId
-  name: string
-  image: string
-  members: Array<Types.ObjectId>
-
+  creator: Types.ObjectId;
+  name: string;
+  image: string;
+  members: Array<Types.ObjectId>;
+  totalPost: number;
+  isApproved: boolean;
 }
 

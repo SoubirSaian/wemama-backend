@@ -46,7 +46,7 @@ export const completeProfileValidation = z.object({
             .min(3, "At least 3 interests are required")
             .max(10, "Maximum 10 interests can be added"),
         mumStage: z.string().min(1, "Mum stage is required"),
-        phone: z.string().min(1, "Phone is required"),
+        phone: z.string().min(1, "Phone is required").optional(),
     }),
 });
 

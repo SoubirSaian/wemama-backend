@@ -5,8 +5,11 @@ import { IAuth } from "./auth.interface";
 import { ENUM_USER_ROLE } from "../../../utilities/enum";
 
 const AuthSchema = new Schema<IAuth>({
-    profile: { type: Schema.Types.ObjectId, ref: "User" },
-    // name: { type: String, required: true },
+    profile: { type: Schema.Types.ObjectId, refPath: "profileModel" },
+    profileModel: {
+        type: String,
+        enum: ["User", "Expert"]
+    },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: {

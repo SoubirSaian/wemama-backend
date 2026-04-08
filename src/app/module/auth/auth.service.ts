@@ -35,6 +35,7 @@ const registerUserService = async (payload: IAuth) => {
         const { code, expiredAt } = generateVerifyCode(10);
 
         const userDataPayload: Partial<IAuth> = {
+            profileModel: "User",
             email: email.toLowerCase(),
             password,
             role: "USER",

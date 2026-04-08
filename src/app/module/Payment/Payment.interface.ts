@@ -1,22 +1,19 @@
 import { Types } from "mongoose";
 
 export interface IPayment extends Document {
-  customerId?: Types.ObjectId;
-  orderId?: Types.ObjectId;
-
-  reference: string;
-  provider: "paystack";
-
+  userId: Types.ObjectId;
+  transactionReference: string;
+  platform: string;
+  productId: string;
   amount: number;
   currency: string;
-
   status: string;
-
-  channel?: string;        // card, bank, mobile_money, etc
-  transactionId?: string;  // Paystack transaction id
-
+  // channel?: string;        // card, bank, mobile_money, etc
+ // Paystack transaction id
   metadata?: any;
-
+  subscriptionExpiresAt: Date;
+  autoRenewing: boolean;
+  notificationType: string;
   paidAt?: Date;
   
 //   createdAt: Date;

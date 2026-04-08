@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 
 export interface IAuth {
     profile: Types.ObjectId;
+    profileModel: string;
     email: string;
     name?: string;
     role: string;

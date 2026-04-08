@@ -1,50 +1,56 @@
 import express from "express";
-import {auth} from "../../middlewares/auth";
+import {auth, authorizeUser} from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import PostValidations from "./Post.validation";
 import PostController from "./Post.controller";
-import { uploadPostImage } from "../../../helper/multer";
+// import { uploadPostImage } from "../../../helper/multer";
 
 
 const postRouter = express.Router();
 
-postRouter.post("/create-post",
-//     auth(),
-    uploadPostImage.array("post-image", 4),
-    validateRequest(PostValidations.postZodSchema),
+
+postRouter.post("/create-new-post",
+    authorizeUser,
+    validateRequest(PostValidations.createPostValidation),
     PostController.createPost
 );
 
-postRouter.get("/get-my-post",
-//     auth(),
-    validateRequest(PostValidations.getAllPostsZodSchema),
-    PostController.getAllPost
+postRouter.post("/toggle-like",
+    authorizeUser,
+    validateRequest(PostValidations.giveLikeValidation),
+    PostController.toggleLike
 );
 
-postRouter.get("/get-nearby-post",
-//     auth(),
-    validateRequest(PostValidations.getAllPostsZodSchema),
-    PostController.getNearbyPost
+postRouter.post("/add-comment",
+    authorizeUser,
+    validateRequest(PostValidations.makeCommentValidation),
+    PostController.makeComment
 );
 
-postRouter.get("/get-post-detail/:id",
-//     auth(),
+postRouter.get("/get-all-comment/:id",
+    // authorizeUser,
+    // validateRequest(PostValidations.makeCommentValidation),
+    PostController.getALLComment
+);
+
+//manage post
+
+postRouter.post("/pin-post/:id",
+    authorizeUser,
     // validateRequest(PostValidations.getAllPostsZodSchema),
-    PostController.getPostDetail
+    PostController.pinPost
 );
 
-postRouter.post("/accept-post-request",
-//     auth(),
+postRouter.post("/lock-comment/:id",
+    authorizeUser,
     // validateRequest(PostValidations.getAllPostsZodSchema),
-    PostController.acceptPostRequest
+    PostController.lockComment
 );
 
-//dashboard
-
-postRouter.post("/dashboard-all-posts",
-//     auth(),
+postRouter.delete("/delete-post/:id",
+    authorizeUser,
     // validateRequest(PostValidations.getAllPostsZodSchema),
-    PostController.acceptPostRequest
+    PostController.deletePost
 );
 
 
