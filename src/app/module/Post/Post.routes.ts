@@ -53,6 +53,26 @@ postRouter.delete("/delete-post/:id",
     PostController.deletePost
 );
 
+//dashboard post
+
+postRouter.post("/dashboard-pin-post/:id",
+    // authorizeUser,
+    // validateRequest(PostValidations.getAllPostsZodSchema),
+    PostController.dashboardPinPost
+);
+
+postRouter.post("/dashboard-lock-comment/:id",
+    // authorizeUser,
+    // validateRequest(PostValidations.getAllPostsZodSchema),
+    PostController.dashboardLockComment
+);
+
+postRouter.delete("/dashboard-delete-post/:id",
+    // authorizeUser,
+    // validateRequest(PostValidations.getAllPostsZodSchema),
+    PostController.dashboardDeletePost
+);
+
 
 
 export default postRouter

@@ -21,6 +21,8 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     "http://localhost:1001",
+    "http://localhost:2002",
+    "10.10.20.43:2002"
   ]
 }));
 

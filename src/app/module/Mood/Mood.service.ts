@@ -113,6 +113,49 @@ const createMoodContentService = async (payload: IMoodContent) => {
     return mood;
 }
 
+const getMoodContentDashboardService = async (query: Record<string,unknown>) => {
+  const {moodId,key} = query;
+  
+  // if(!moodId){
+  //   throw new ApiError(400,"Mood id is required to get mood content.");
+  // }
+
+  const [mood,moodContent] = await Promise.all([
+    await MoodModel.findOne({
+      _id: moodId,
+      // key: key
+    }).lean(),
+    await MoodContentModel.find({
+      mood: moodId,
+      // key: key
+    }).lean()
+  ]);
+
+
+  return {mood,moodContent};
+}
+
+// const addMoodChipImageService = async (moodId:string,file: Express.Multer.File | undefined) => {
+
+//   let moodImagePath = "";
+
+//   if(file){
+//     moodImagePath = file.path;
+//   }else{
+//     throw new ApiError(400,"Image file is required to add image.")
+//   }
+
+//     const mood = await MoodModel.findByIdAndUpdate(moodId,{
+//         image: moodImagePath
+//     },{new:true});
+
+//     if(!mood){
+//         throw new ApiError(500,"Failed to add mood chip image.");
+//     }
+
+//     return mood;
+// }
+
 //edit mood photo
 const editMoodPhotoService = async (file: Express.Multer.File | undefined, query: Record<string,unknown>) => {
 
@@ -215,6 +258,8 @@ const MoodServices = {
     getALLModdContentService,
     checkInStreakMaintainService,
     createMoodContentService,
+    getMoodContentDashboardService,
+    // addMoodChipImageService,
     editMoodPhotoService,
     editMoodContentService,
     deleteMoodContentService,

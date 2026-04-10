@@ -41,7 +41,7 @@ const getMyCommunity = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Retrieved my community.",
+        message: "Retreved my community.",
         data: result,
     });
 });
@@ -118,6 +118,48 @@ const communitySuggestion = catchAsync(async (req, res) => {
 
 //dashboard
 
+const getALLCommunity = catchAsync(async (req, res) => {
+
+    // const { user } = req as AuthRequest;
+
+    const result = await CommunityServices.getALLCommunityService( req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all approved community.",
+        data: result,
+    });
+});
+
+const getCommunityRequest = catchAsync(async (req, res) => {
+
+    // const { user } = req as AuthRequest;
+
+    const result = await CommunityServices.getALLCommunityRequestService( req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all community request.",
+        data: result,
+    });
+});
+
+const getCommunityDetail = catchAsync(async (req, res) => {
+
+    // const { user } = req as AuthRequest;
+
+    const result = await CommunityServices.getSingleCommunityDetails( req.params.id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved a community detail.",
+        data: result,
+    });
+});
+
 const deleteCommunity = catchAsync(async (req, res) => {
 
     // const { user } = req as AuthRequest;
@@ -155,7 +197,10 @@ const CommunityController = {
     getSingleCommunity,
     searchCommunity,
     communitySuggestion,
+    getALLCommunity,
+    getCommunityRequest,
     approveCommunity,
+    getCommunityDetail,
     deleteCommunity
  };
 

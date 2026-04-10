@@ -23,7 +23,7 @@ settingsRouter.get(
 );
 
 settingsRouter.get(
-    "/get-single-contact/:id",
+    "/get-single-contact-us/:id",
     // auth(),
     // validateRequest(SettingsValidations.helpAndSupportValidation),
     SettingsController.getSingleSupport
@@ -76,7 +76,7 @@ settingsRouter.patch(
 
 //faq routes
 settingsRouter.post(
-    "/create-faq",
+    "/create-new-faq",
     validateRequest(SettingsValidations.faqValidationSchema),
     SettingsController.createFaq
 );

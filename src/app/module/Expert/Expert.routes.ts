@@ -105,7 +105,7 @@ ExpertRouter.get("/get-all-session",
     ExpertController.getAllSession
 );
 
-ExpertRouter.get("/all-session-request",
+ExpertRouter.get("/get-session-request",
     // authorizeUser,
     ExpertController.getAllSessionRequest
 );
@@ -128,7 +128,7 @@ ExpertRouter.get("/get-expert-request",
     ExpertController.getAllExpertRequest
 );
 
-ExpertRouter.get("/all-approved-espert",
+ExpertRouter.get("/get-all-expert",
     // authorizeUser,
     ExpertController.getAllApprovedExpert
 );
@@ -138,19 +138,22 @@ ExpertRouter.get("/get-single-expert/:id",
     ExpertController.getSingleExpert
 );
 
-ExpertRouter.get("/delete-expert/:id",
+ExpertRouter.delete("/delete-expert/:id",
     // authorizeUser,
     ExpertController.deleteExpert
 );
 
-ExpertRouter.get("/approve-expert/:id",
+ExpertRouter.post("/approve-expert/:id",
     // authorizeUser,
     ExpertController.approveExpert
 );
-ExpertRouter.get("/block-expert/:id",
+
+ExpertRouter.post("/block-expert/:id",
     // authorizeUser,
     ExpertController.blockExpert
 );
+
+
 
 //pre asked question
 ExpertRouter.post("/add-new-question",

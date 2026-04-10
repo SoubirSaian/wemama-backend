@@ -355,7 +355,32 @@ const checkMatchCount = async (userDetails: IJwtPayload) => {
 //dashboard
 
 const getAllUserService = async (query: Record<string,unknown>) => {
-    let {page} = query;
+    let {page,searchText,subscriptionPlan,dateRange} = query;
+
+    if(searchText){
+      const users = await UserModel.find({
+        $or: [
+              { name: { $regex: searchText, $options: "i" } },
+              { email: { $regex: searchText, $options: "i" } },
+        ]
+      })
+      .select("name email profileImage subscription createdAt")
+        .sort({createdAt: -1})
+          .lean();
+
+      return users;
+    }
+
+    // else if(subscriptionPlan){
+
+    //   const users = await UserModel.find({})
+
+    // }
+    // else if (dateRange){
+    //   const users = await UserModel.find({
+    //     createdAt: { $lte: dateRange?.startDate & $gte: dateRange?.endDate}
+    //   }).lean();
+    // }
 
     page = parseInt(page as any) || 1;
     let limit = 10;
@@ -366,6 +391,7 @@ const getAllUserService = async (query: Record<string,unknown>) => {
 
         UserModel.find({})
            .sort({createdAt: -1})
+              .select("name email profileImage subscription createdAt")
                .skip(skip).limit(limit)
                    .lean(),
     
@@ -418,6 +444,17 @@ const deleteUser = async (userDetails: IJwtPayload) => {
     return null
 
 }
+const muteUser = async (id:string) => {
+
+  
+
+}
+
+const suspendUser = async (id:string) => {
+
+  
+
+}
 
 const UserServices = {
     getUserProfile,
@@ -430,6 +467,8 @@ const UserServices = {
     getUsersAroundMe,
     checkMatchCount,
     getAllUserService,
-    blockUserService
+    blockUserService,
+    muteUser,
+    suspendUser
 };
 export default UserServices;

@@ -13,6 +13,28 @@ ReportRouter.post("/new-report",
     ReportController.reportContent
 );
 
+//dashboard
+
+ReportRouter.get("/get-all-report",
+
+    ReportController.getAllReport
+);
+
+ReportRouter.get("/get-report-detail/:id",
+    
+    ReportController.getReportDetail
+);
+
+ReportRouter.post("/resolve-report/:id",
+    
+    ReportController.resolveReport
+);
+
+ReportRouter.delete("/delete-report/:id",
+    
+    ReportController.deleteReport
+);
+
 
 
 export default ReportRouter;

@@ -56,6 +56,7 @@ const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
       const session = await SessionModel.findByIdAndUpdate(id, {
           status: ENUM_SESSION_STATUS.ONGOING,
           channelName: channelName,
+          doctorUid: uid,
           startedAt: new Date()
       },{new: true});
   
@@ -122,7 +123,7 @@ const startLiveSession = async (userDetails: IJwtPayload,id: string) => {
       };
       
     } catch (error) {
-      // console.error('Start live + recording failed:', error.response?.data || error.message);
+      console.error('Start live + recording failed:', error);
       // res.status(500).json({ 
       //   error: 'Failed to start live stream',
       //   details: error.response?.data || error.message 
@@ -188,7 +189,7 @@ const tokenRenewalService = async (userDetails: IJwtPayload, payload: any) => {
 }
 
 //finish live session
-const FinishLiveSession = async (userDetails: IJwtPayload,payload: {channelName: string}) => {
+const FinishLiveSession = async (userDetails: IJwtPayload,query: Record<string,unknown>) => {
     const {profileId} = userDetails;
 
 //     const doctor = req.user;
@@ -196,7 +197,7 @@ const FinishLiveSession = async (userDetails: IJwtPayload,payload: {channelName:
 //     return res.status(403).json({ error: 'Only doctors can end live streams' });
 //   }
 
-  const { channelName } = payload;
+  const { channelName } = query;
 //   if (!session) {
 //     throw new ApiError(404,"Session not found to join.");
 //   }
@@ -210,7 +211,7 @@ const FinishLiveSession = async (userDetails: IJwtPayload,payload: {channelName:
       },
       { 
         status: ENUM_SESSION_STATUS.COMPLETED,
-        finishesdAt: new Date()
+        finishedAt: new Date()
       },
       { new: true } // return the updated document
     );

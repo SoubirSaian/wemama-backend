@@ -14,12 +14,12 @@ import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 
-const registerAdminService = async (payload: IAdmin) => {
+const registerAdminService = async (payload:Partial<IAdmin>) => {
     const {name, email,password,phone} = payload;
 
     const admin = await AdminModel.create({
         name: name,
-        email: email.toLowerCase(),
+        email: email?.toLowerCase(),
         password: password,
         phone: phone
     });
@@ -276,7 +276,11 @@ const adminResetPasswordService = async (payload: IAdminResetPassword) => {
     return {user:{name:admin.name,email:admin.email,role:admin.role}, accessToken };
 };
 
-const editProfileService = async (userDetails: JwtPayload,file: Express.Multer.File | undefined, payload: Partial<IAdmin>) => {
+const editProfileService = async (
+    userDetails: JwtPayload,
+    file: Express.Multer.File | undefined,
+    payload: Partial<IAdmin>
+) => {
 
     const {userId} = userDetails;
 

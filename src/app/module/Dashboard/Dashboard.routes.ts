@@ -34,7 +34,7 @@ dashboardRouter.post("/admin-send-verify-code",
 );
 
 dashboardRouter.patch("/admin-reset-password",
-    authorizeUser,
+    // authorizeUser,
     validateRequest(AuthValidations.resetPasswordValidation)  ,
     DashboardController.adminResetPassword
 );
@@ -54,7 +54,7 @@ dashboardRouter.patch("/admin-change-password",
     DashboardController.changeAdminPassword
 );
 
-dashboardRouter.delete("/delete-admin",
+dashboardRouter.delete("/delete-admin/:id",
     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN]),
     // validateRequest(adminLoginValidation),
     DashboardController.deleteAdminAccount

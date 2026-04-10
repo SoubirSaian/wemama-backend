@@ -202,7 +202,7 @@ const endAgoraLiveSession = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
 
-    const result = await AgoraServices.FinishLiveSession(user,req.body);
+    const result = await AgoraServices.FinishLiveSession(user,req.query);
 
     sendResponse(res, {
         statusCode: 200,
@@ -214,6 +214,7 @@ const endAgoraLiveSession = catchAsync(async (req, res) => {
 
 
 // dashnoard
+//session
 
 const getAllSession = catchAsync(async (req, res) => {
 

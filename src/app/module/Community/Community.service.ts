@@ -186,6 +186,8 @@ const getSingleCommunityServices = async (userDetails:IJwtPayload,communityId: s
         PostModel.aggregate(pipeline)
     ]);
 
+    return {community,allPost};
+
 }
 
 const getAllJoinedCommunityServices = async (userDetails: IJwtPayload, query: Record<string,unknown>) => {
@@ -275,6 +277,78 @@ const editCommunityProfile = async (
 
 
 //dashboard
+const getALLCommunityService = async (query: Record<string,unknown>) => {
+
+    let {page} = query;
+
+    page = parseInt(page as any) || 1;
+    let limit = 10;
+    let skip = (page as number - 1) * limit;
+
+
+    const [communities, totalCount] = await Promise.all([
+
+        CommunityModel.find({isApproved: true})
+                    .sort({createdAt: -1})
+                        .skip(skip).limit(limit)
+                           .lean(),
+    
+        CommunityModel.countDocuments({isApproved:true}).lean()
+    ])
+
+    const totalPage = Math.ceil(totalCount / limit);
+
+    return {
+        meta:{page,limit: 10,total: totalCount, totalPage},
+        communities
+    };
+   
+}
+
+const getALLCommunityRequestService = async (query: Record<string,unknown>) => {
+
+    let {page} = query;
+
+    page = parseInt(page as any) || 1;
+    let limit = 10;
+    let skip = (page as number - 1) * limit;
+
+
+    const [communities, totalCount] = await Promise.all([
+
+        CommunityModel.find({isApproved: false})
+            .populate({path: "creator", select: "name"})
+                .select("name")
+                    .sort({createdAt: -1})
+                        .skip(skip).limit(limit)
+                           .lean(),
+    
+        CommunityModel.countDocuments({isApproved:false}).lean()
+    ])
+
+    const totalPage = Math.ceil(totalCount / limit);
+
+    return {
+        meta:{page,limit: 10,total: totalCount, totalPage},
+        communities
+    };
+   
+}
+
+const getSingleCommunityDetails = async (communityId:string) => {
+
+    const [community,allPost] = await Promise.all([
+        CommunityModel.findById(communityId).lean(),
+        PostModel.find({community: communityId})
+            .populate({path: "creator", select: "name profileImage"})
+            .select("content isPinned isCommentLocked")
+            .sort({createdAt: -1})
+            .lean()
+    ]);
+
+    return {community,allPost};
+}
+
 const deleteCommunity = async (communityId:string) => {
 
     const deleteCommunity = await CommunityModel.findByIdAndDelete(communityId);
@@ -282,6 +356,8 @@ const deleteCommunity = async (communityId:string) => {
     if (!deleteCommunity) {
         throw new ApiError(400, "Failed to delete  community.");
     }
+
+    return null;
 }
 
 const approveCommunity = async (communityId:string) => {
@@ -290,6 +366,8 @@ const approveCommunity = async (communityId:string) => {
 
     //approve community
     community.isApproved = !community.isApproved;
+
+    await community.save();
 
     let msg = community.isApproved ? "Community is approved" : "Community is disapproved."
 
@@ -309,8 +387,11 @@ const CommunityServices = {
     searchCommunity,
     getCommunitySuggestion, 
     editCommunityProfile,
+    getALLCommunityService,
+    getALLCommunityRequestService,
+    getSingleCommunityDetails,
     deleteCommunity,
-    approveCommunity
+    approveCommunity,
  };
 
 export default CommunityServices;

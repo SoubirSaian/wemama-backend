@@ -69,6 +69,30 @@ const addMoodContent = catchAsync(async (req, res) => {
     });
 });
 
+const getMoodContentDashboard = catchAsync(async (req, res) => {
+
+    const result = await MoodServices.getMoodContentDashboardService(req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Mood content retrieved successfully.",
+        data: result,
+    });
+});
+
+// const addMoodImage = catchAsync(async (req, res) => {
+
+//     const result = await MoodServices.getMoodContentDashboardService(req.query);
+
+//     sendResponse(res, {
+//         statusCode: 200,
+//         success: true,
+//         message: "Mood content retrieved successfully.",
+//         data: result,
+//     });
+// });
+
 const addMoodImage = catchAsync(async (req, res) => {
 
     const result = await MoodServices.editMoodPhotoService(req.file,req.query);
@@ -149,6 +173,7 @@ const MoodController = {
     getALLMoodContent, 
     maintainCheckinStreak,
     addMoodContent,
+    getMoodContentDashboard,
     addMoodImage,
     editMoodContent,
     deleteMoodContent ,

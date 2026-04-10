@@ -53,12 +53,27 @@ CommunityRouter.get("/get-community-suggestion",
 
 //dashboard
 
-CommunityRouter.post("/approve-community",
+CommunityRouter.get("/get-all-community",
+    // authorizeUser,
+    CommunityController.getALLCommunity
+);
+
+CommunityRouter.get("/get-community-request",
+    // authorizeUser,
+    CommunityController.getCommunityRequest
+);
+
+CommunityRouter.get("/get-single-community/:id",
+    // authorizeUser,
+    CommunityController.getCommunityDetail
+);
+
+CommunityRouter.post("/approve-community/:id",
     // authorizeUser,
     CommunityController.approveCommunity
 );
 
-CommunityRouter.delete("/delete-community",
+CommunityRouter.delete("/delete-community/:id",
     // authorizeUser,
     CommunityController.deleteCommunity
 );

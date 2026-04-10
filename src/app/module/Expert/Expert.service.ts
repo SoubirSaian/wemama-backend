@@ -589,6 +589,7 @@ const markedQuestionAsAnswerd = async (questionId: string) => {
     return question;
 
 }
+
 //dashboard
 
 //session
@@ -596,7 +597,10 @@ const markedQuestionAsAnswerd = async (questionId: string) => {
 //get all session request
 const getAllSessionRequestService = async () => {
 
-    const sessions = await SessionModel.find({isApproved: false}).populate({ path: "expert", select: "name email profession"}).lean();
+    const sessions = await SessionModel.find({isApproved: false})
+         .populate({ path: "expert", select: "name image profession"})
+            .select("title description time date")
+                .lean();
 
     return sessions;
 }
@@ -610,7 +614,7 @@ const approveSessionRequestService = async (id:string) => {
         throw new ApiError(500,"Failed to approve session.");
     }
 
-    return session;
+    return null;
 }
 
 // delete session
@@ -627,7 +631,10 @@ const deleteSessionService = async (id: string) => {
 
 const getALLSessionService = async () => {
 
-    const sessions = await SessionModel.find({isApproved: true}).populate({ path: "expert", select: "name email image profession"}).lean();
+    const sessions = await SessionModel.find({isApproved: true})
+        .populate({ path: "expert", select: "name image profession"})
+            .select("title description time date")
+                .lean();
 
     return sessions;
 }
@@ -645,11 +652,12 @@ const getALLExpertRequestService = async (query: Record<string,unknown>) => {
     const [experts, totalExpert] = await Promise.all([
 
         ExpertModel.find({isApproved: false})
-           .sort({createdAt: -1})
-               .skip(skip).limit(limit)
-                   .lean(),
+                .select("name phone email image createdAt")
+                    .sort({createdAt: -1})
+                        .skip(skip).limit(limit)
+                           .lean(),
     
-        ExpertModel.countDocuments({})
+        ExpertModel.countDocuments({isApproved: false})
     ])
 
     const totalPage = Math.ceil(totalExpert / limit);
@@ -673,11 +681,13 @@ const getALLExpertService = async (query: Record<string,unknown>) => {
     const [experts, totalExpert] = await Promise.all([
 
         ExpertModel.find({isApproved: true})
-           .sort({createdAt: -1})
-               .skip(skip).limit(limit)
-                   .lean(),
+            .populate({path: "auth", select:"isBlocked"})
+                .select("auth name phone email image createdAt")
+                    .sort({createdAt: -1})
+                        .skip(skip).limit(limit)
+                           .lean(),
     
-        ExpertModel.countDocuments({})
+        ExpertModel.countDocuments({isApproved:true})
     ])
 
     const totalPage = Math.ceil(totalExpert / limit);
@@ -711,20 +721,27 @@ const approveExpertService = async (id: string) => {
 
 const deleteExpertService = async (id: string) => {
 
-    const deletedExpert = await ExpertModel.findByIdAndDelete(id).lean();
+    const deletedExpert:any = await ExpertModel.findById(id).select("auth").lean();
 
-    if(!deletedExpert){
-        throw new ApiError(500,"Failed to delete Expart.")
+    const [auth,expert] = await Promise.all([
+        AuthModel.findByIdAndDelete(deletedExpert.auth),
+        ExpertModel.findByIdAndDelete(deletedExpert._id)
+    ]);
+
+    if(!auth || !expert){
+        throw new ApiError(500,"Failed to delete Expert.")
     }
 
     return null;
 }
 
-const blockExpertService = async (id: string) => {
+const blockExpertService = async (authId: string) => {
 
-    const blockedExpert: any = await AuthModel.findByIdAndUpdate(id,{
-        isBlocked: true
-    },{new: true}).lean();
+    const blockedExpert: any = await AuthModel.findByIdAndUpdate(authId);
+
+    blockedExpert.isBlocked = !blockedExpert.isBlocked;
+
+    await blockedExpert.save();
 
     if(!blockedExpert.isBlocked){
         throw new ApiError(500,"Failed to block the Expart.")

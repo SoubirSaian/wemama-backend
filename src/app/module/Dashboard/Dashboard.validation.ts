@@ -27,7 +27,7 @@ export const adminLoginValidation = z.object({
 
 export const changeAdminPasswordValidation = z.object({
     body: z.object({
-        oldPassword: z.string().min(4,'Old password must be at least 5 characters'),
+        currentPassword: z.string().min(4,'Old password must be at least 5 characters'),
         newPassword: z.string().min(4, 'New password must be at least 5 characters'),
         confirmPassword: z.string().min(4, 'Confirm password must be at least 5 characters'),
         

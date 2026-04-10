@@ -7,6 +7,8 @@ import settingsRouter from "../module/Settings/Settings.routes";
 import ExpertRouter, { AgoraRouter } from "../module/Expert/Expert.routes";
 import ChatRouter from "../module/Chat/Chat.routes";
 import postRouter from "../module/Post/Post.routes";
+import ReportRouter from "../module/Report/Report.routes";
+import dashboardRouter from "../module/Dashboard/Dashboard.routes";
 
 const allRouter = Router();
 
@@ -33,6 +35,10 @@ const moduleRoutes = [
         router: postRouter,
     },
     {
+        path: '/report',
+        router: ReportRouter,
+    },
+    {
         path: '/expert',
         router: ExpertRouter,
     },
@@ -47,6 +53,10 @@ const moduleRoutes = [
     {
         path: '/chat',
         router: ChatRouter,
+    },
+    {
+        path: '/dashboard',
+        router: dashboardRouter,
     },
     
 ];

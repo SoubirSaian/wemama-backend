@@ -408,6 +408,54 @@ const deletePostService = async (userDetails: IJwtPayload,postId: string) => {
 
 }
 
+//dashboard
+
+const dashboardPinPostService = async (postId: string) => {
+
+
+    //check if user can delete this or not
+    const post: any = await PostModel.findById(postId);
+
+    post.isPinned = !post.isPinned;
+    await post.save();
+
+    if(!post){
+        throw new ApiError(500,"Failed to pinned post");
+    }
+
+    return null;
+    
+}
+
+const dashboardLockCommentService = async (postId:string) => {
+
+    //check if user can delete this or not
+    const post: any = await PostModel.findById(postId);
+
+    post.isCommentLocked = !post.isCommentLocked;
+    await post.save();
+
+    if(!post){
+        throw new ApiError(500,"Failed to lock comment.");
+    }
+
+    return null;
+
+}
+
+const dashboardDeletePostService = async (postId: string) => {
+
+
+    const deletedPost = await PostModel.findByIdAndDelete(postId).lean();
+
+    if(!deletedPost){
+        throw new ApiError(500,"Failed to delete post");
+    }
+
+    return null;
+
+}
+
 
 
 
@@ -418,6 +466,9 @@ const PostServices = {
     getAllCommentService,
     pinPostService,
     lockCommentService,
-    deletePostService
+    deletePostService,
+    dashboardPinPostService,
+    dashboardLockCommentService,
+    dashboardDeletePostService
 };
 export default PostServices;

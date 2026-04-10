@@ -141,7 +141,31 @@ const blockUser = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Password changed successfully.",
+        message: "User blocked.",
+        data: result,
+    });
+});
+
+const muteUser = catchAsync(async (req, res) => {
+
+    const result = await UserServices.muteUser(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "User muted",
+        data: result,
+    });
+});
+
+const suspendUser = catchAsync(async (req, res) => {
+
+    const result = await UserServices.suspendUser(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "User suspended",
         data: result,
     });
 });
@@ -155,6 +179,8 @@ const UserController = {
     getFriendProfileController,
     matchUserController,
     dashboardGetUser,
-    blockUser
+    blockUser,
+    muteUser,
+    suspendUser,
  };
 export default UserController;

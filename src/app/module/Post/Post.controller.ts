@@ -103,6 +103,50 @@ const deletePost = catchAsync(async (req, res) => {
     });
 });
 
+//dashboard
+
+const dashboardPinPost = catchAsync(async (req, res) => {
+
+    // const {user} = req as AuthRequest;
+
+    const result = await PostServices.dashboardPinPostService(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Post pinned.",
+        data: result,
+    });
+});
+
+const dashboardLockComment = catchAsync(async (req, res) => {
+
+    // const {user} = req as AuthRequest;
+
+    const result = await PostServices.dashboardLockCommentService(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Comment locked.",
+        data: result,
+    });
+});
+
+const dashboardDeletePost = catchAsync(async (req, res) => {
+
+    // const {user} = req as AuthRequest;
+
+    const result = await PostServices.dashboardDeletePostService(req.params.id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Post deleted.",
+        data: result,
+    });
+});
+
 const PostController = { 
     createPost,
     toggleLike,
@@ -110,6 +154,9 @@ const PostController = {
     getALLComment,
     pinPost,
     lockComment,
-    deletePost
+    deletePost,
+    dashboardPinPost,
+    dashboardLockComment,
+    dashboardDeletePost
  };
 export default PostController;

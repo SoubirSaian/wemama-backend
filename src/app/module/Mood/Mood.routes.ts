@@ -42,8 +42,15 @@ MoodRouter.post("/add-mood-content",
     MoodController.addMoodContent
 );
 
+MoodRouter.get("/get-mood-content-dashboard",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(MoodValidations.addMoodContent),
+    MoodController.getMoodContentDashboard
+);
+
 MoodRouter.post("/add-mood-image",
     // auth(["Supplier","Customer"]),
+    uploadProfile.single("mood-image"),
     // validateRequest(MoodValidations.addMoodContent),
     MoodController.addMoodImage
 );

@@ -88,5 +88,16 @@ userRouter.get("/block-user/:id",
     UserController.blockUser
 );
 
+userRouter.get("/mute-user/:id",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(UserValidations.addBankDetailValidation),
+    UserController.blockUser
+);
+userRouter.get("/suspend-user/:id",
+    // auth(["Supplier","Customer"]),
+    // validateRequest(UserValidations.addBankDetailValidation),
+    UserController.blockUser
+);
+
 
 export default userRouter;
