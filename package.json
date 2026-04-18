@@ -4,9 +4,9 @@
   "description": "it's a backend server based on node and express. It's a REST API server for a mobile application called WeMama. The server is responsible for handling all the business logic and data management for the application.",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "node init && nodemon --watch src --exec ts-node src/server.ts",
+    "build": "node init && tsc",
+    "start": "node init && node dist/server.js",
     "create-module": "ts-node src/app/create_module_tem.ts module"
   },
   "keywords": [],
@@ -49,6 +49,7 @@
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
     "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^8.0.4",
     "socket.io": "^4.8.3",
     "uuid": "^13.0.0",

@@ -2,6 +2,7 @@ import { model, models, Schema } from "mongoose";
 import { IUser } from "./User.interface";
 import bcrypt from "bcrypt";
 import config from "../../../config";
+import { ENUM_SUBSCRIPTION_TYPE } from "../../../utilities/enum";
 
 
 const UserSchema = new Schema<IUser>({
@@ -81,7 +82,8 @@ const UserSchema = new Schema<IUser>({
     },
     subscription: {
         isSubscribed: { type: Boolean, default: false },
-        planPrice: {type: String, default: ''},
+        planType: {type: String, enum: Object.values(ENUM_SUBSCRIPTION_TYPE) ,default: ENUM_SUBSCRIPTION_TYPE.FREE},
+        planPrice: {type: Number, default: 0},
         subscribedAt: { type: Date, default: null },
         expiredAt: { type: Date, default: null }
     },
@@ -103,6 +105,12 @@ const UserSchema = new Schema<IUser>({
 
 // In your user.model.ts
 UserSchema.index({ location: '2dsphere' });
+
+//dashboard get all users
+//To keep this fast in production:
+UserSchema.index({ createdAt: -1 });
+UserSchema.index({ "subscription.planType": 1 });
+UserSchema.index({ name: "text", email: "text" });
 
 
 

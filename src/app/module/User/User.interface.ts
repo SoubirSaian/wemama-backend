@@ -20,7 +20,8 @@ export interface IUser {
     mumStage: string;
     subscription: {
         isSubscribed: boolean;
-        planPrice: string;
+        planType: string;
+        planPrice: number;
         subscribedAt: Date;
         expiredAt: Date;
     };

@@ -5,6 +5,7 @@ export interface ICommunity {
   name: string;
   image: string;
   members: Array<Types.ObjectId>;
+  totalMember: number;
   totalPost: number;
   isApproved: boolean;
 }

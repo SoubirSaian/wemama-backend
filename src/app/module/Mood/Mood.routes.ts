@@ -4,6 +4,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import MoodValidations from "./Mood.validation";
 import MoodController from "./Mood.controller";
 import { uploadProfile } from "../../middlewares/multerMiddleware";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 const MoodRouter = express.Router();
@@ -37,7 +38,7 @@ MoodRouter.post("/add-today-mood",
 //dashboard
 
 MoodRouter.post("/add-mood-content",
-    // auth(["Supplier","Customer"]),
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(MoodValidations.addMoodContent),
     MoodController.addMoodContent
 );
@@ -49,20 +50,20 @@ MoodRouter.get("/get-mood-content-dashboard",
 );
 
 MoodRouter.post("/add-mood-image",
-    // auth(["Supplier","Customer"]),
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     uploadProfile.single("mood-image"),
     // validateRequest(MoodValidations.addMoodContent),
     MoodController.addMoodImage
 );
 
 MoodRouter.patch("/edit-mood-content/:id",
-    // auth(["Supplier","Customer"]),
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(MoodValidations.editMoodContent),
     MoodController.editMoodContent
 );
 
 MoodRouter.delete("/delete-mood-content/:id",
-    // auth(["Supplier","Customer"]),
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     // validateRequest(MoodValidations.addMoodContent),
     MoodController.deleteMoodContent
 );

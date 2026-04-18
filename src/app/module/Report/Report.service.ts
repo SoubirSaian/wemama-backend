@@ -1,3 +1,4 @@
+import { report } from "process";
 import ApiError from "../../../error/ApiError";
 import { IJwtPayload } from "../../../interface/jwt.interface";
 import { ENUM_REPORT_STATUS } from "../../../utilities/enum";
@@ -5,15 +6,27 @@ import { IReport } from "./Report.interface";
 import ReportModel from "./Report.model";
 
 
-const reportPostService = async (userDetails: IJwtPayload,payload: Partial<IReport>) => {
+const reportPostService = async (
+    userDetails: IJwtPayload,
+    file: Express.Multer.File | undefined,
+    payload: Partial<IReport>
+) => {
 
     const {profileId} = userDetails;
 
     const refModel = payload.type === "Content" ? "Post" : "User";
 
+    let reportImageFile: string = '';
+
+    if(file){
+        reportImageFile = `uploads/report-image/${file?.filename}`;
+    }
+
     const report = await ReportModel.create({
         user: profileId,
         report: payload.report,
+        reportImage: reportImageFile,
+        note: payload?.note ? payload?.note : '',
         refModel,
         name: payload.name,
         type: payload.type
@@ -42,19 +55,34 @@ const getAllReport = async () => {
 
 const getReportDetail = async (reportId:string) => {
 
-    const report = await ReportModel.findById(reportId)
-        .populate({ path: "user", select: "name" })
-            .populate({
-                path: "report",
-                select: "creator content",
-                populate: {
-                    path: "creator",
-                    select: "name"
-                }
-            })
-            .lean();
+    const reportType:any = await ReportModel.findById(reportId).select("name type").lean();
 
-    return report;
+    if(reportType?.type === "Content" ){
+
+        const report = await ReportModel.findById(reportId)
+            .populate({ path: "user", select: "-_id name" })
+                .populate({
+                    path: "report",
+                    select: "creator content",
+                    populate: {
+                        path: "creator",
+                        select: "-_id name profileImage"
+                    }
+                })
+                .lean();
+    
+        return report;
+
+    } else {
+
+        const report = await ReportModel.findById(reportId)
+            .populate({ path: "user", select: "-_id name" })
+                .lean();
+    
+        return report;
+
+    }
+
 }
 
 const resolveReportService = async (reportId:string) => {

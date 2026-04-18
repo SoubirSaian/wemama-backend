@@ -4,12 +4,18 @@ import { ENUM_REPORT_STATUS } from "../../../utilities/enum";
 
 const ReportSchema = new Schema<IReport>({
     user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
-    report: { type: Schema.Types.ObjectId, required: true, ref: "refModel" },
+    report: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        refPath: "refModel" // ✅ FIX HERE
+    },
     refModel: { 
         type: String, 
         enum: ["User","Post"],
         required: [true,"Ref model is required"]
     },
+    reportImage: { type: String, default: '' },
+    note: { type: String, default: '' },
     name: { type: String, required: true },
     type: { type: String, required: true},
     status: { 

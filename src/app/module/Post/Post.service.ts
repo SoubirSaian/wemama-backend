@@ -88,7 +88,7 @@ const toggleLikeService = async (
     }).lean();
 
     if (!community) {
-        throw new ApiError(403, "You can not like this post. You have to join the community to make interaction.");
+        throw new ApiError(403, "You can not like this post. You have to join the community first to make interaction.");
     }
 
     // check if already liked
@@ -109,7 +109,7 @@ const toggleLikeService = async (
         );
 
         return {
-            liked: false,
+            isLiked: false,
             message: "Post unliked"
         };
 
@@ -128,7 +128,7 @@ const toggleLikeService = async (
         );
 
         return {
-            liked: true,
+            isLiked: true,
             message: "Post liked"
         };
     }
@@ -358,7 +358,9 @@ const pinPostService = async (userDetails: IJwtPayload,postId: string) => {
         throw new ApiError(500,"Failed to pinned post");
     }
 
-    return null;
+    let msg = !post.isPinned ? "Post pinned." : "Post unpinned.";
+
+    return msg;
     
 }
 
@@ -381,7 +383,9 @@ const lockCommentService = async (userDetails: IJwtPayload,postId:string) => {
         throw new ApiError(500,"Failed to lock comment.");
     }
 
-    return null;
+     let msg = !post.isCommentLocked ? "Comment locked." : "Comment unlocked.";
+
+    return msg;
 
 }
 
@@ -404,6 +408,12 @@ const deletePostService = async (userDetails: IJwtPayload,postId: string) => {
         throw new ApiError(500,"Failed to delete post");
     }
 
+    //decrease to post count 
+    CommunityModel.findByIdAndUpdate(post?.community?._id,
+        { $inc: { totalPost: - 1 } },
+        { new: true }
+    );
+
     return null;
 
 }
@@ -420,10 +430,12 @@ const dashboardPinPostService = async (postId: string) => {
     await post.save();
 
     if(!post){
-        throw new ApiError(500,"Failed to pinned post");
+        throw new ApiError(500,"Failed to pinned post.");
     }
 
-    return null;
+    let msg = !post.isPinned ? "Post pinned." : "Post unpinned.";
+
+    return msg;
     
 }
 
@@ -439,18 +451,26 @@ const dashboardLockCommentService = async (postId:string) => {
         throw new ApiError(500,"Failed to lock comment.");
     }
 
-    return null;
+    let msg = !post.isCommentLocked ? "Comment locked." : "Comment unlocked.";
+
+    return msg;
 
 }
 
 const dashboardDeletePostService = async (postId: string) => {
 
 
-    const deletedPost = await PostModel.findByIdAndDelete(postId).lean();
+    const deletedPost:any = await PostModel.findByIdAndDelete(postId).lean();
 
     if(!deletedPost){
         throw new ApiError(500,"Failed to delete post");
     }
+
+    //decrease to post count 
+    CommunityModel.findByIdAndUpdate(deletedPost?.community,
+        { $inc: { totalPost: - 1 } },
+        { new: true }
+    );
 
     return null;
 

@@ -188,7 +188,8 @@ const getAllAdminService = async (query: Record<string,unknown>) => {
            
              name: { $regex: searchText as string, $options: "i" } ,
              role: ENUM_ADMIN_ROLE.ADMIN
-        }).lean();
+        }).select("-password -verificationCode -isEmailVerified")
+        .lean();
         
         return searchedAdmin;
     }
@@ -200,6 +201,7 @@ const getAllAdminService = async (query: Record<string,unknown>) => {
 
     const [ allAdmin, totalAdmin ] = await Promise.all([
         AdminModel.find({role: ENUM_ADMIN_ROLE.ADMIN})
+            .select("-password -verificationCode -isEmailVerified")
             .sort({ createdAt: -1 })
                 .skip(skip).limit(limit)
                     .lean(),

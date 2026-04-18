@@ -2,9 +2,11 @@ import { join } from "path";
 import ApiError from "../../../error/ApiError";
 import { IJwtPayload } from "../../../interface/jwt.interface";
 import { ICommunity } from "./Community.interface";
+import notification from "../../../helper/sendNotification";
 import CommunityModel from "./Community.model";
 import mongoose from "mongoose";
-import PostModel from "../Post/Post.model";
+import PostModel, { CommentModel, LikeModel } from "../Post/Post.model";
+import { ENUM_NOTIFICATION_TYPE } from "../../../utilities/enum";
 
 const createCommunityService = async (
     userDetails: IJwtPayload,
@@ -17,7 +19,7 @@ const createCommunityService = async (
 
     let imageUrl = "";
     if (file) {
-        imageUrl = `/uploads/community-image/${file.filename}`;
+        imageUrl = `uploads/community-image/${file.filename}`;
     }
     console.log(imageUrl);
     const community = await CommunityModel.create({
@@ -89,6 +91,8 @@ const joinCommunityService = async (userDetails: IJwtPayload,query: Record<strin
 
     joinedCommunity?.members.push(profileId);
 
+    joinedCommunity.totalMember += joinedCommunity.totalMember;
+
     await joinedCommunity?.save();
 
     if (!joinedCommunity) {
@@ -113,9 +117,12 @@ const getSingleCommunityServices = async (userDetails:IJwtPayload,communityId: s
             }
         },
 
-        // 2️⃣ Sort
+        // 3️⃣ Sort logic (IMPORTANT)
         {
-            $sort: { createdAt: -1 }
+            $sort: {
+                isPinned: -1,     // 🔥 pinned first (true = 1)
+                createdAt: -1     // latest first
+            }
         },
 
         // 3️⃣ Populate creator (manual populate)
@@ -169,12 +176,13 @@ const getSingleCommunityServices = async (userDetails:IJwtPayload,communityId: s
             $project: {
                 content: 1,
                 totalLike: 1,
-                totalComment: 1,
+                isPinned: 1,
                 isLiked: 1,
                 // myLike: 0,
                 createdAt: 1,
                 "creator.name": 1,
-                "creator.state": 1,
+                "creator.profileImage": 1,
+                // "creator.state": 1,
                 "creator.city": 1
             }
         }
@@ -182,7 +190,7 @@ const getSingleCommunityServices = async (userDetails:IJwtPayload,communityId: s
     ];
 
     const [community,allPost] = await Promise.all([
-        CommunityModel.findById(communityId).lean(),
+        CommunityModel.findById(communityId).select("-members").lean(),
         PostModel.aggregate(pipeline)
     ]);
 
@@ -218,16 +226,55 @@ const getAllJoinedCommunityServices = async (userDetails: IJwtPayload, query: Re
 
 }
 
-const searchCommunity = async (userDetails: IJwtPayload, query: Record<string,unknown>) => {
-
+const searchCommunity = async ( userDetails: IJwtPayload ,query: Record<string,unknown>) => {
    const {profileId} = userDetails;
+   const {searchText} = query;
 
-//    import mongoose from "mongoose";
-   const profileObjectId = new mongoose.Schema.Types.ObjectId(profileId)
+   const profileObjectId = new mongoose.Types.ObjectId(profileId);
 
-    const communities = await CommunityModel.find({
-        members: profileObjectId
-    }).lean();
+
+    const communities = await CommunityModel.aggregate([
+
+        // 1️⃣ Search by name + approved
+        {
+            $match: {
+                name: { $regex: searchText, $options: "i" },
+                isApproved: true
+            }
+        },
+
+        // 2️⃣ Add isCreator
+        {
+            $addFields: {
+                isCreator: {
+                    $eq: ["$creator", profileObjectId]
+                }
+            }
+        },
+
+        // 3️⃣ Add isMember
+        {
+            $addFields: {
+                isMember: {
+                    $in: [profileObjectId, "$members"]
+                }
+            }
+        },
+
+        // 4️⃣ Optional: shape response
+        {
+            $project: {
+                name: 1,
+                image: 1,
+                totalMember: 1,
+                totalPost: 1,
+                isCreator: 1,
+                isMember: 1,
+                createdAt: 1
+            }
+        }
+
+    ]);
 
     return communities;
 
@@ -240,6 +287,7 @@ const getCommunitySuggestion = async (userDetails:IJwtPayload) => {
     const profileObjectId = new mongoose.Types.ObjectId(profileId)
 
     const communities = await CommunityModel.find({
+        creator: {$ne: profileObjectId },
         members: { $nin: [profileObjectId] },
         isApproved: true
     }).lean();
@@ -337,37 +385,125 @@ const getALLCommunityRequestService = async (query: Record<string,unknown>) => {
 
 const getSingleCommunityDetails = async (communityId:string) => {
 
+    const communityObjectId = new mongoose.Types.ObjectId(communityId)
+
+    const pipeline: any = [
+
+        // 1️⃣ Match community
+        {
+            $match: {
+                community: communityObjectId
+            }
+        },
+
+        // 2️⃣ Populate creator
+        {
+            $lookup: {
+                from: "users",
+                localField: "creator",
+                foreignField: "_id",
+                as: "creator"
+            }
+        },
+        { $unwind: "$creator" },
+
+        // 3️⃣ Sort logic (IMPORTANT)
+        {
+            $sort: {
+                isPinned: -1,     // 🔥 pinned first (true = 1)
+                createdAt: -1     // latest first
+            }
+        },
+
+        // 4️⃣ Shape response
+        {
+            $project: {
+                content: 1,
+                isPinned: 1,
+                isCommentLocked: 1,
+                createdAt: 1,
+                "creator.name": 1,
+                "creator.profileImage": "$creator.profileImage"
+            }
+        }
+
+    ];
+
     const [community,allPost] = await Promise.all([
-        CommunityModel.findById(communityId).lean(),
-        PostModel.find({community: communityId})
-            .populate({path: "creator", select: "name profileImage"})
-            .select("content isPinned isCommentLocked")
-            .sort({createdAt: -1})
-            .lean()
+        CommunityModel.findById(communityId).select("-members").lean(),
+        PostModel.aggregate(pipeline)
     ]);
 
     return {community,allPost};
 }
 
-const deleteCommunity = async (communityId:string) => {
 
-    const deleteCommunity = await CommunityModel.findByIdAndDelete(communityId);
 
-    if (!deleteCommunity) {
-        throw new ApiError(400, "Failed to delete  community.");
+const deleteCommunity = async (communityId: string) => {
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const communityObjectId = new mongoose.Types.ObjectId(communityId);
+
+  try {
+
+    // 🔹 Step 1: delete community
+    const community = await CommunityModel.findByIdAndDelete(
+      communityObjectId,
+      { session }
+    );
+
+    if (!community) {
+      throw new ApiError(500, "Failed to delete community.");
     }
 
+    // 🔹 Step 2: get postIds (lightweight)
+    const posts = await PostModel.aggregate([
+      { $match: { community: communityObjectId } },
+      { $project: { _id: 1 } }
+    ]).session(session);
+
+    const postIds = posts.map(p => p._id);
+
+    // 🔹 Step 3: parallel delete
+    await Promise.all([
+      LikeModel.deleteMany({ post: { $in: postIds } }).session(session),
+      CommentModel.deleteMany({ post: { $in: postIds } }).session(session),
+      PostModel.deleteMany({ community: communityObjectId }).session(session),
+    ]);
+
+    await session.commitTransaction();
+    session.endSession();
+
     return null;
-}
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log("community deletion error:", error);
+    throw new ApiError(500,"Failed to delete community.");
+  }
+};
 
 const approveCommunity = async (communityId:string) => {
 
-    const community = await CommunityModel.findById(communityId).select("name isApproved");
+    const community = await CommunityModel.findById(communityId).select("creator name isApproved");
 
     //approve community
     community.isApproved = !community.isApproved;
 
     await community.save();
+
+    //send notification to community creator
+    await notification.createNotification({
+        toId: community?.creator,
+        toModel: "User",
+        title: `Admin approved your new community.`,
+        type: ENUM_NOTIFICATION_TYPE.APPROVE_COMMUNITY,
+        referenceId: community?._id || communityId,
+        referenceModel: "Community",
+      });
 
     let msg = community.isApproved ? "Community is approved" : "Community is disapproved."
 
