@@ -4,7 +4,8 @@ import validateRequest from "../../middlewares/validateRequest";
 import UserValidations from "./User.validation";
 import UserController from "./User.controller";
 import {uploadProfile} from "../../middlewares/multerMiddleware";
-import { checkMatchLimit } from "../../middlewares/subscription";
+import { checkMatchLimit } from "../../middlewares/permission";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 const userRouter = express.Router();
@@ -78,24 +79,20 @@ userRouter.get("/match-user",
 
 userRouter.get("/get-all-user",
     // auth(["Supplier","Customer"]),
-    // validateRequest(UserValidations.addBankDetailValidation),
     UserController.dashboardGetUser
 );
 
-userRouter.get("/block-user/:id",
-    // auth(["Supplier","Customer"]),
-    // validateRequest(UserValidations.addBankDetailValidation),
+userRouter.post("/block-user/:id",
+    auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     UserController.blockUser
 );
 
-userRouter.get("/mute-user/:id",
-    // auth(["Supplier","Customer"]),
-    // validateRequest(UserValidations.addBankDetailValidation),
+userRouter.post("/mute-user/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     UserController.blockUser
 );
-userRouter.get("/suspend-user/:id",
-    // auth(["Supplier","Customer"]),
-    // validateRequest(UserValidations.addBankDetailValidation),
+userRouter.post("/suspend-user/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     UserController.blockUser
 );
 

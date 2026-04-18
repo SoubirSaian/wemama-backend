@@ -40,6 +40,9 @@ const PostSchema = new Schema<IPost>({
       
 }, { timestamps: true });
 
+//This makes sorting super fast
+PostSchema.index({ community: 1, isPinned: -1, createdAt: -1 });
+
 //like schema
 const LikeSchema = new Schema<ILike>({
     creator: {
@@ -97,6 +100,7 @@ const commentSchema = new Schema<IComment>({
     }
     
 });
+
 //for better pipeline performance
 commentSchema.index({ post: 1, parentComment: 1 });
 

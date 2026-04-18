@@ -4,6 +4,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import CommunityValidations from "./Community.validation";
 import CommunityController from "./Community.controller";
 import { uploadProfile } from "../../middlewares/multerMiddleware";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 const CommunityRouter = express.Router();
@@ -69,12 +70,12 @@ CommunityRouter.get("/get-single-community/:id",
 );
 
 CommunityRouter.post("/approve-community/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     CommunityController.approveCommunity
 );
 
 CommunityRouter.delete("/delete-community/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     CommunityController.deleteCommunity
 );
 

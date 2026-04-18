@@ -1,6 +1,6 @@
 import ApiError from "../../../error/ApiError";
 import mongoose from "mongoose";
-import { sendVerificationEmail } from "../../../helper/emailHelper";
+import { sendApprovedExpertEmail, sendApprovedSessionEmail, sendVerificationEmail } from "../../../helper/emailHelper";
 import generateVerifyCode from "../../../utilities/codeGenerator";
 import { IAuth, TLoginUser } from "../auth/auth.interface";
 import AuthModel from "../auth/auth.module";
@@ -11,52 +11,67 @@ import { createToken } from "../../../helper/jwtHelper";
 import config from "../../../config";
 import { Secret, SignOptions } from "jsonwebtoken";
 import { ENUM_SESSION_STATUS, ENUM_USER_ROLE } from "../../../utilities/enum";
+import dayjs from "dayjs";
 
 //website Expert
 const expertRegisterationService = async (payload: IExpertCredintial) => {
 
+    
+    const { email, password, role } = payload;
+    
+    const emailExist:any = await AuthModel.findOne({
+        email: email.toLowerCase(), role: role
+    }).populate({path:"profile" ,select:"name phone country city"}).lean();
+    // console.log(emailExist);
+    
+    if (emailExist) {
+        
+        //check if email verified or not
+        if(!emailExist?.isEmailVerified){
+            return { 
+                // expert: emailExist,
+                statusCode: 403 ,
+                isEmailVerified: false,
+                msg: "Your email is not verified yet. Please verify your email.",
+            }
+        }
+        
+        //check whether profile complete or not
+        else if(!emailExist?.profile?.name && !emailExist?.profile?.phone && !emailExist?.profile?.country && !emailExist?.profile?.city){
+            
+            //generate token
+            const tokenPayload: IJwtPayload = {
+                authId: emailExist?._id as string,
+                email: emailExist?.email,
+                profileId: emailExist?.profile?._id as string
+            };
+            
+            const accessToken: string =  createToken(
+                tokenPayload,
+                config.jwt.secret as Secret,
+                config.jwt.expires_in as SignOptions["expiresIn"]
+            );
+            
+            return { 
+                // expert: emailExist,
+                statusCode: 302 ,
+                msg: "Your profile is not completed yet. Please complete your profile.",
+                accessToken
+            }
+            // throw new ApiError(403, "Your profile not completed yet.");
+        }
+        
+        else{
+            
+            throw new ApiError(409, "This email already exists. Please Login.");
+        }
+        
+    }
+    
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-
-        const { email, password, role } = payload;
-
-        const emailExist:any = await AuthModel.findOne({
-            email: email.toLowerCase(), role: role
-        }).populate({path:"profile" ,select:"name phone country city"}).lean();
-        // console.log(emailExist);
-        if (emailExist) {
-
-            if(!emailExist?.profile?.name && !emailExist?.profile?.phone && !emailExist?.profile?.country && !emailExist?.profile?.city){
-
-                //generate token
-                const tokenPayload: IJwtPayload = {
-                    authId: emailExist?._id as string,
-                    email: emailExist?.email,
-                    profileId: emailExist?.profile?._id as string
-                };
-
-                const accessToken: string =  createToken(
-                    tokenPayload,
-                    config.jwt.secret as Secret,
-                    config.jwt.expires_in as SignOptions["expiresIn"]
-                );
-                
-                return { 
-                    // expert: emailExist,
-                    statusCode: 403 ,
-                    msg: "Your profile is not completed yet. Please complete your profile.",
-                    accessToken
-                }
-                // throw new ApiError(403, "Your profile not completed yet.");
-            }else{
-
-                throw new ApiError(409, "This email already exists. Please Login.");
-            }
-            
-        }
-
         // Generate verification code
         const { code, expiredAt } = generateVerifyCode(10);
 
@@ -166,6 +181,18 @@ const expertLoginService = async (payload: TLoginUser) => {
     if (user.isBlocked) {
         throw new ApiError(403, 'This user is blocked. Please contact to admin.');
     }
+
+    //check whether user email is verified or not
+    if(!user.isEmailVerified){
+        
+        return { 
+            // expert: emailExist,
+            statusCode: 403 ,
+            isEmailVerified: false,
+            msg: "Your email is not verified yet. Please verify your email.",
+        }
+            
+    }
     // console.log(user);
     //check if user profile is completed or not
     if(!user?.profile?.name && !user?.profile?.phone && !user?.profile?.country && !user?.profile?.city){
@@ -185,7 +212,7 @@ const expertLoginService = async (payload: TLoginUser) => {
         
         return { 
             // expert: user,
-            statusCode: 403 ,
+            statusCode: 302 ,
             msg: "Your profile is not completed yet. Please complete your profile.",
             accessToken: accessToken
         }
@@ -383,6 +410,8 @@ const createNewSession = async (userDetails: IJwtPayload,payload: Partial<ISessi
         throw new ApiError(500,"Failed to create new session.");
     }
 
+    console.log("add new session:", newSession);
+
     return newSession;
 }
 
@@ -405,13 +434,14 @@ const editSession = async (userDetails: IJwtPayload,id:string,payload: Partial<I
         time,
         title,
         description,
-
+        isApproved: false
     },{new:true});
 
     if(!newSession){
-        throw new ApiError(500,"Failed to update a  session.");
+        throw new ApiError(500,"Failed to update a session.");
     }
 
+    console.log("update session:",newSession);
     return newSession;
 }
 
@@ -463,13 +493,40 @@ const getTodaySessions = async (userDetails: IJwtPayload) => {
 
     const sessions = await SessionModel.find({
         expert: profileId,
-        date: { $gte: startOfDay, $lt: endOfDay },
-        // status: ENUM_SESSION_STATUS.UPCOMING
+        status: { $ne: ENUM_SESSION_STATUS.COMPLETED},
+        date: { $gte: startOfDay, $lt: endOfDay }
     })
     // .populate({ path: "expert", select: "name email image profession" })
             .lean();
 
     return sessions;
+}
+
+const getExpertSessionStatData = async (userDetails: IJwtPayload) => {
+    const {profileId} = userDetails;
+
+    const [upcomingSessionCount,completedSessionCount,pendingQuestionCount] = await Promise.all([
+        SessionModel.countDocuments({
+            expert: profileId,
+            status: ENUM_SESSION_STATUS.UPCOMING
+        }).lean(),
+
+        SessionModel.countDocuments({
+            expert: profileId,
+            status: ENUM_SESSION_STATUS.COMPLETED
+        }).lean(),
+
+        QuestionModel.countDocuments({
+            expert: profileId,
+            isAnswerd: false
+        }).lean(),
+    ]);
+
+    return {
+        upcomingSessionCount,
+        completedSessionCount,
+        pendingQuestionCount
+    };
 }
 
 
@@ -500,7 +557,7 @@ const getALLExpertSessionsApp = async (query: Record<string,unknown>) => {
     const [sessions,totalSesssion] = await Promise.all([
 
         await SessionModel.find(filter).populate({
-             path: "expert", select: "name email image"
+             path: "expert", select: "name email image profession"
             }).sort({createdAt: -1})
                .skip(skip).limit(limit)
                    .lean(),
@@ -608,11 +665,25 @@ const getAllSessionRequestService = async () => {
 //approve session 
 const approveSessionRequestService = async (id:string) => {
 
-    const session = await SessionModel.findByIdAndUpdate(id,{isApproved: true},{new: true});
-
+    
+    const session: any = await SessionModel.findByIdAndUpdate(id,{isApproved: true},{new: true})
+    .populate({path: "expert",select:"name email"}).lean();
+    
     if(!session.isApproved){
         throw new ApiError(500,"Failed to approve session.");
     }
+    
+    const formattedDate = dayjs(session?.date).format("DD MMM YYYY");
+    const formattedTime = dayjs(session?.time).format("hh:mm A");
+    console.log(formattedDate,formattedTime);
+
+    //send email to expert
+    await sendApprovedSessionEmail(session?.expert?.email,{
+        expertName: session?.expert?.name || "Expert",
+        sessionTitle: session?.title,
+        sessionDate: formattedDate,
+        sessionTime: formattedTime,
+    });
 
     return null;
 }
@@ -652,7 +723,7 @@ const getALLExpertRequestService = async (query: Record<string,unknown>) => {
     const [experts, totalExpert] = await Promise.all([
 
         ExpertModel.find({isApproved: false})
-                .select("name phone email image createdAt")
+                .select("auth name phone email image createdAt")
                     .sort({createdAt: -1})
                         .skip(skip).limit(limit)
                            .lean(),
@@ -716,7 +787,15 @@ const approveExpertService = async (id: string) => {
         throw new ApiError(500,"Failed to approve the Expert.");
     }
 
-    return expert;
+    //send email to expert
+    await sendApprovedExpertEmail(expert?.email,{
+        expertName: expert?.name,
+        expertCountry: expert?.country,
+        expertCity: expert?.city,
+        expertProfession: expert?.profession?.title,
+    });
+
+    return null;
 }
 
 const deleteExpertService = async (id: string) => {
@@ -743,11 +822,13 @@ const blockExpertService = async (authId: string) => {
 
     await blockedExpert.save();
 
-    if(!blockedExpert.isBlocked){
-        throw new ApiError(500,"Failed to block the Expart.")
-    }
+    // if(blockedExpert){
+    //     throw new ApiError(500,"Failed to block the Expart.")
+    // }
 
-    return null;
+    let msg = blockedExpert.isBlocked ? "Expert blocked!" : "Expert unblocked!";
+
+    return msg;
 }
 
 //question
@@ -765,6 +846,7 @@ const ExpertServices = {
     deleteSessionWebsite,
     getMySessions,
     getTodaySessions,
+    getExpertSessionStatData,
     getALLExpertSessionsApp,
     getAllSessionRequestService,
     approveSessionRequestService,

@@ -6,6 +6,7 @@ const CommunitySchema = new Schema<ICommunity>({
     name: { type: String, required: true },
     image: { type: String, default: null },
     members: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    totalMember: {type: Number, default: 0},
     totalPost: {type: Number, default: 0},
     isApproved: {type: Boolean, default: false},
 }, { timestamps: true });

@@ -3,6 +3,8 @@ import sendEmail from "./sendEmail";
 // import resetPassEmailTemp from "../mailTemplate/resetPassEmailTemp";
 import verifyEmailTemp from "../mailTemplate/verifyEmailTemp";
 import { TEmailTemplate } from "../interface/email.interface";
+import approveSessionEmailTemp from "../mailTemplate/approveSession";
+import approveExpertEmailTemp from "../mailTemplate/approveExpert";
 // import supportEmailTemp from "../mailTemplate/supportEmailTemp";
 
 
@@ -13,6 +15,32 @@ export const sendVerificationEmail = async (email: string, data: TEmailTemplate)
       email,
       subject: "Verify your email - health vault Security Code",
       html: verifyEmailTemp(data),
+    });
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(500, "Email was not sent");
+  }
+};
+
+export const sendApprovedSessionEmail = async (email: string, data: any) => {
+  try {
+    await sendEmail({
+      email,
+      subject: "Admin approved your session.",
+      html: approveSessionEmailTemp(data),
+    });
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(500, "Email was not sent");
+  }
+};
+
+export const sendApprovedExpertEmail = async (email: string, data: any) => {
+  try {
+    await sendEmail({
+      email,
+      subject: "Admin approved your expert profile!!!.",
+      html: approveExpertEmailTemp(data),
     });
   } catch (error) {
     console.log(error);

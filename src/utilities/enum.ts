@@ -20,6 +20,7 @@ export const ENUM_SESSION_STATUS= {
 export const ENUM_NOTIFICATION_TYPE = {
     LIKE_POST : "LIKE_POST",
     COMMENT_POST : "COMMENT_POST",
+    APPROVE_COMMUNITY : "APPROVE_COMMUNITY",
     SENT_MESSAGE : "SENT_MESSAGE",
     SENT_WAVE : "SENT_WAVE",
     ACCEPT_WAVE : "ACCEPT_WAVE",
@@ -39,6 +40,11 @@ export const ENUM_PAYMENT_STATUS = {
 export const ENUM_REPORT_STATUS = {
   PENDING : "Pending",
   RESOLVED : "Resolved",
+}
+
+export const ENUM_SUBSCRIPTION_TYPE = {
+  FREE : "Free",
+  PREMIUM : "Premium",
 }
 
 // export const ENUM_PAYMENT_STATUS = {

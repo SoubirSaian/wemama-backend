@@ -50,7 +50,7 @@ const SessionSchema = new Schema<ISession>({
     },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    time: { type: String, required: true },
+    time: { type: Date, required: true },
     date: { type: Date, required: true },
     channelName: { type: String, default: '' },
     

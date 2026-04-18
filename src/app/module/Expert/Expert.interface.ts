@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Date, Types } from "mongoose";
 import { number } from "zod";
 
 export interface IExpert {
@@ -39,7 +39,7 @@ export interface ISession{
   status: string;
   title: string;
   description: string;
-  time: string;
+  time: Date;
   date: Date;
   channelName: string;
   

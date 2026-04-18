@@ -21,7 +21,7 @@ const expertLogin = catchAsync(async (req, res) => {
     const result:any = await ExpertServices.expertLoginService(req.body);
 
     sendResponse(res, {
-        statusCode: result.statusCode,
+        statusCode: result.statusCode || 200,
         success: true,
         message: result.msg,
         data: result,
@@ -138,6 +138,19 @@ const getMySession = catchAsync(async (req, res) => {
     });
 });
 
+const getExpertSessionStatData = catchAsync(async (req, res) => {
+
+     const { user } = req as AuthRequest;
+
+    const result = await ExpertServices.getExpertSessionStatData(user);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Retrieved all sessions stat.",
+        data: result,
+    });
+});
 const getTodaySession = catchAsync(async (req, res) => {
 
      const { user } = req as AuthRequest;
@@ -342,8 +355,8 @@ const blockExpert = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Expert blocked.",
-        data: result,
+        message: result,
+        data: null,
     });
 });
 
@@ -418,6 +431,7 @@ const ExpertController = {
     deleteSessionWeb,
     getMySession,
     getTodaySession,
+    getExpertSessionStatData,
     getAllSessionApp,
     startAgoraLiveSession,
     joinAgoraLiveSession,

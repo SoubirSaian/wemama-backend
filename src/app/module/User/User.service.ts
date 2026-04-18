@@ -354,57 +354,110 @@ const checkMatchCount = async (userDetails: IJwtPayload) => {
 
 //dashboard
 
-const getAllUserService = async (query: Record<string,unknown>) => {
-    let {page,searchText,subscriptionPlan,dateRange} = query;
+// const getAllUserService = async (query: Record<string,unknown>) => {
+//     let {page,searchText} = query;
 
-    if(searchText){
-      const users = await UserModel.find({
-        $or: [
-              { name: { $regex: searchText, $options: "i" } },
-              { email: { $regex: searchText, $options: "i" } },
-        ]
-      })
-      .select("name email profileImage subscription createdAt")
-        .sort({createdAt: -1})
-          .lean();
+//     if(searchText){
+//       const users = await UserModel.find({
+//         $or: [
+//               { name: { $regex: searchText, $options: "i" } },
+//               { email: { $regex: searchText, $options: "i" } },
+//         ]
+//       })
+//       .select("name email profileImage subscription createdAt")
+//         .sort({createdAt: -1})
+//           .lean();
 
-      return users;
+//       return users;
+//     }
+
+//     page = parseInt(page as any) || 1;
+//     let limit = 10;
+//     let skip = (page as number - 1) * limit;
+
+
+//     const [users, totalUser] = await Promise.all([
+
+//         UserModel.find({})
+//            .sort({createdAt: -1})
+//               .select("name email profileImage subscription createdAt")
+//                .skip(skip).limit(limit)
+//                    .lean(),
+    
+//         UserModel.countDocuments({})
+//     ])
+
+//     const totalPage = Math.ceil(totalUser / limit);
+
+//     return {
+//         meta:{page,limit: 10,total: totalUser, totalPage},
+//         users
+//     };
+// }
+
+//make sure frontend send ISO date format : new Date().toISOString()
+const getAllUserService = async (query: Record<string, unknown>) => {
+  
+  let { page, searchText, planType, startDate, endDate } = query;
+
+  // pagination
+  page = parseInt(page as string) || 1;
+  const limit = 10;
+  const skip = (page as number - 1) * limit;
+
+  // 🔥 dynamic filter
+  const filter: any = {};
+
+  // ✅ search filter
+  if (searchText) {
+    filter.$or = [
+      { name: { $regex: searchText, $options: "i" } },
+      { email: { $regex: searchText, $options: "i" } },
+    ];
+  }
+
+  // ✅ subscription filter
+  if (planType) {
+    filter["subscription.planType"] = planType;
+  }
+
+  // ✅ date range filter
+  if (startDate || endDate) {
+    filter.createdAt = {};
+
+    if (startDate) {
+      filter.createdAt.$gte = new Date(startDate as string);
     }
 
-    // else if(subscriptionPlan){
+    if (endDate) {
+      filter.createdAt.$lte = new Date(endDate as string);
+    }
+  }
 
-    //   const users = await UserModel.find({})
+  // 🔥 parallel query
+  const [users, totalUser] = await Promise.all([
+    UserModel.find(filter)
+      .select("auth name email profileImage subscription createdAt")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
 
-    // }
-    // else if (dateRange){
-    //   const users = await UserModel.find({
-    //     createdAt: { $lte: dateRange?.startDate & $gte: dateRange?.endDate}
-    //   }).lean();
-    // }
+    UserModel.countDocuments(filter),
+  ]);
 
-    page = parseInt(page as any) || 1;
-    let limit = 10;
-    let skip = (page as number - 1) * limit;
+  const totalPage = Math.ceil(totalUser / limit);
 
-
-    const [users, totalUser] = await Promise.all([
-
-        UserModel.find({})
-           .sort({createdAt: -1})
-              .select("name email profileImage subscription createdAt")
-               .skip(skip).limit(limit)
-                   .lean(),
-    
-        UserModel.countDocuments({})
-    ])
-
-    const totalPage = Math.ceil(totalUser / limit);
-
-    return {
-        meta:{page,limit: 10,total: totalUser, totalPage},
-        users
-    };
-}
+  return {
+    meta: {
+      limit,
+      page,
+      total: totalUser,
+      totalPage,
+    },
+    users,
+  };
+};
 
 const blockUserService = async (id: string) => {
     

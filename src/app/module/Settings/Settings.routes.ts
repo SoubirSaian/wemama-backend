@@ -3,6 +3,7 @@ import {auth} from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import SettingsValidations from "./Settings.validation";
 import SettingsController from "./Settings.controller";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
 
 
 const settingsRouter = express.Router();
@@ -31,7 +32,7 @@ settingsRouter.get(
 
 settingsRouter.delete(
     "/delete-contact-us/:id",
-    // auth(),
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     // validateRequest(SettingsValidations.helpAndSupportValidation),
     SettingsController.deleteHelpAndSupport
 );
@@ -45,6 +46,7 @@ settingsRouter.get(
 
 settingsRouter.patch(
     "/update-privacy-policy/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(SettingsValidations.settingsValidationSchema),
     SettingsController.editPrivacyPolicy
 );
@@ -57,6 +59,7 @@ settingsRouter.get(
 
 settingsRouter.patch(
     "/update-terms-and-conditions/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(SettingsValidations.settingsValidationSchema),
     SettingsController.editTermsConditions
 );
@@ -69,6 +72,7 @@ settingsRouter.get(
 
 settingsRouter.patch(
     "/update-community-guidelines/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(SettingsValidations.settingsValidationSchema),
     SettingsController.editCommunityGuidelines
 );
@@ -77,6 +81,7 @@ settingsRouter.patch(
 //faq routes
 settingsRouter.post(
     "/create-new-faq",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(SettingsValidations.faqValidationSchema),
     SettingsController.createFaq
 );
@@ -88,12 +93,14 @@ settingsRouter.get(
 
 settingsRouter.patch(
     "/edit-faq/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     validateRequest(SettingsValidations.editFaqValidationSchema),
     SettingsController.editFaq
 );
 
 settingsRouter.delete(
     "/delete-faq/:id",
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     SettingsController.deleteFaq
 );  
 

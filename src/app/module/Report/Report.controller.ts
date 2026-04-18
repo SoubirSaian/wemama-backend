@@ -7,7 +7,7 @@ const reportContent = catchAsync(async (req, res) => {
 
     const {user} = req as AuthRequest;
 
-    const result = await ReportServices.reportPostService(user, req.body);
+    const result = await ReportServices.reportPostService(user, req.file,req.body);
 
     sendResponse(res, {
         statusCode: 201,

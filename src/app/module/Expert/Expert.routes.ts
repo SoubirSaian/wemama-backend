@@ -4,6 +4,8 @@ import validateRequest from "../../middlewares/validateRequest";
 import ExpertValidations from "./Expert.validation";
 import ExpertController from "./Expert.controller";
 import { uploadExpertFile, uploadProfile } from "../../middlewares/multerMiddleware";
+import { ENUM_ADMIN_ROLE } from "../../../utilities/enum";
+import { checkSessionApproval } from "../../middlewares/permission";
 
 
 const ExpertRouter = express.Router();
@@ -12,6 +14,7 @@ export const AgoraRouter = express.Router();
 //agora
 AgoraRouter.post("/start-live/:sessionId",
     authorizeUser,
+    checkSessionApproval,
     // validateRequest(ExpertValidations.expertRegistrationValidation),
     ExpertController.startAgoraLiveSession
 );
@@ -91,6 +94,11 @@ ExpertRouter.get("/get-today-session",
     ExpertController.getTodaySession
 );
 
+ExpertRouter.get("/get-session-stat-data",
+    authorizeUser,
+    ExpertController.getExpertSessionStatData
+);
+
 //app
 
 ExpertRouter.get("/get-all-session-app",
@@ -111,12 +119,12 @@ ExpertRouter.get("/get-session-request",
 );
 
 ExpertRouter.post("/approve-session/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     ExpertController.approveSession
 );
 
 ExpertRouter.delete("/delete-session/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     ExpertController.deleteSession
 );
 
@@ -139,17 +147,17 @@ ExpertRouter.get("/get-single-expert/:id",
 );
 
 ExpertRouter.delete("/delete-expert/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     ExpertController.deleteExpert
 );
 
 ExpertRouter.post("/approve-expert/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     ExpertController.approveExpert
 );
 
 ExpertRouter.post("/block-expert/:id",
-    // authorizeUser,
+     auth([ENUM_ADMIN_ROLE.SUPER_ADMIN,ENUM_ADMIN_ROLE.ADMIN]),
     ExpertController.blockExpert
 );
 

@@ -70,8 +70,8 @@ const pinPost = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Post pinned.",
-        data: result,
+        message: result,
+        data: null,
     });
 });
 
@@ -84,8 +84,8 @@ const lockComment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Comment locked.",
-        data: result,
+        message: result,
+        data: null,
     });
 });
 
@@ -114,8 +114,8 @@ const dashboardPinPost = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Post pinned.",
-        data: result,
+        message: result,
+        data: null,
     });
 });
 
@@ -128,8 +128,8 @@ const dashboardLockComment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Comment locked.",
-        data: result,
+        message: result,
+        data: null,
     });
 });
 
